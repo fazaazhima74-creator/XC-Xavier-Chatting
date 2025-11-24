@@ -2293,6 +2293,206 @@
             opacity: 0.8;
         }
 
+        /* BARU: Halaman Daftar Pesan */
+        .messages-page {
+            width: 100%;
+            height: 100vh;
+            background: var(--bg-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages-header {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--card-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            gap: 15px;
+        }
+
+        .messages-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent-purple);
+        }
+
+        .messages-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .message-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            background: var(--card-color);
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .message-item:hover {
+            background: rgba(146, 125, 252, 0.1);
+        }
+
+        .message-item-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent-purple);
+        }
+
+        .message-item-info {
+            flex: 1;
+        }
+
+        .message-item-name {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .message-item-preview {
+            font-size: 14px;
+            color: #a0a0a0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 200px;
+        }
+
+        .message-item-time {
+            font-size: 12px;
+            color: #a0a0a0;
+        }
+
+        /* BARU: Voice Note Recording */
+        .voice-note-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: var(--card-color);
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .voice-note-visualizer {
+            flex: 1;
+            height: 30px;
+            background: rgba(146, 125, 252, 0.1);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .voice-note-wave {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-purple) 0%, transparent 100%);
+            animation: wave 1s infinite linear;
+        }
+
+        @keyframes wave {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .voice-note-duration {
+            font-size: 14px;
+            color: var(--accent-purple);
+            font-weight: 600;
+        }
+
+        .voice-note-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .voice-note-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent-purple);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* BARU: Modal Popup */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--card-color);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-purple);
+            margin-bottom: 15px;
+        }
+
+        .modal-message {
+            font-size: 16px;
+            margin-bottom: 25px;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+
+        .modal-btn {
+            padding: 12px 25px;
+            background: var(--accent-purple);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .modal-btn:hover {
+            background: #7a68e0;
+        }
+
         /* Media Query Responsif */
         @media (max-width: 900px) {
             .home-container {
@@ -2437,6 +2637,26 @@
         <div class="connection-status" id="connection-status">NON KONEKSI</div>
     </div>
 
+    <!-- BARU: Modal untuk akun sudah terdaftar -->
+    <div class="modal-overlay" id="account-exists-modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-icon">⚠️</div>
+            <div class="modal-title">AKUN INI SUDAH TERDAFTAR</div>
+            <div class="modal-message">Email ini sudah digunakan untuk membuat akun. Silakan gunakan email lain atau login dengan akun yang sudah ada.</div>
+            <button class="modal-btn" onclick="closeModal('account-exists-modal')">Tutup</button>
+        </div>
+    </div>
+
+    <!-- BARU: Modal untuk akun sudah login di perangkat lain -->
+    <div class="modal-overlay" id="account-logged-in-modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-icon">📱</div>
+            <div class="modal-title">AKUN INI TELAH DI LOGIN DI PERANGKAT LAIN</div>
+            <div class="modal-message">Akun ini sedang aktif di perangkat lain. Anda tidak dapat login di dua perangkat secara bersamaan.</div>
+            <button class="modal-btn" onclick="closeModalAndGoBack('account-logged-in-modal')">Tutup</button>
+        </div>
+    </div>
+
     <div class="auth-container" id="auth-screen" style="display:none;">
         <h2>Daftar Akun Baru</h2>
         
@@ -2573,6 +2793,11 @@
                     <div class="dropdown-menu-item" onclick="showProfilePage()">
                         <span style="font-weight: 600;">&#128100; Profil Saya</span>
                         <p>Lihat dan edit profil Anda</p>
+                    </div>
+                    
+                    <div class="dropdown-menu-item" onclick="showMessagesPage()">
+                        <span style="font-weight: 600;">&#128172; Pesan</span>
+                        <p>Lihat pesan masuk</p>
                     </div>
                     
                     <div class="dropdown-menu-item" onclick="showSettingsPage()">
@@ -2717,6 +2942,11 @@
             <label>Ubah Foto Profil</label>
             <input type="file" id="edit-profile-pic" accept="image/*" style="display:none;">
             <button type="button" onclick="document.getElementById('edit-profile-pic').click()">Pilih Foto Baru</button>
+        </div>
+
+        <!-- BARU: Tombol Pesan di profil sendiri -->
+        <div class="input-group">
+            <button type="button" onclick="showMessagesPage()" style="background: rgba(146, 125, 252, 0.2); color: var(--accent-purple);">📨 Pesan</button>
         </div>
     </div>
 
@@ -3142,6 +3372,7 @@
             </div>
             <div class="chat-actions">
                 <button class="chat-action-btn" onclick="toggleStickerPicker()">😊</button>
+                <button class="chat-action-btn" onclick="toggleVoiceNote()">🎤</button>
                 <button class="chat-action-btn" onclick="toggleVideoCall()">📹</button>
                 <button class="chat-action-btn" onclick="toggleVoiceCall()">📞</button>
             </div>
@@ -3197,6 +3428,58 @@
                     <div class="sticker" onclick="sendSticker('🍪')">🍪</div>
                 </div>
             </div>
+            <div class="sticker-category">
+                <div class="sticker-category-title">Aktivitas</div>
+                <div class="sticker-grid">
+                    <div class="sticker" onclick="sendSticker('⚽')">⚽</div>
+                    <div class="sticker" onclick="sendSticker('🏀')">🏀</div>
+                    <div class="sticker" onclick="sendSticker('🏈')">🏈</div>
+                    <div class="sticker" onclick="sendSticker('⚾')">⚾</div>
+                    <div class="sticker" onclick="sendSticker('🎾')">🎾</div>
+                    <div class="sticker" onclick="sendSticker('🏐')">🏐</div>
+                    <div class="sticker" onclick="sendSticker('🏉')">🏉</div>
+                    <div class="sticker" onclick="sendSticker('🎱')">🎱</div>
+                </div>
+            </div>
+            <div class="sticker-category">
+                <div class="sticker-category-title">Travel</div>
+                <div class="sticker-grid">
+                    <div class="sticker" onclick="sendSticker('🚗')">🚗</div>
+                    <div class="sticker" onclick="sendSticker('✈️')">✈️</div>
+                    <div class="sticker" onclick="sendSticker('🚆')">🚆</div>
+                    <div class="sticker" onclick="sendSticker('🚲')">🚲</div>
+                    <div class="sticker" onclick="sendSticker('🏖️')">🏖️</div>
+                    <div class="sticker" onclick="sendSticker('🗺️')">🗺️</div>
+                    <div class="sticker" onclick="sendSticker('⛰️')">⛰️</div>
+                    <div class="sticker" onclick="sendSticker('🏕️')">🏕️</div>
+                </div>
+            </div>
+            <div class="sticker-category">
+                <div class="sticker-category-title">Objek</div>
+                <div class="sticker-grid">
+                    <div class="sticker" onclick="sendSticker('⌚')">⌚</div>
+                    <div class="sticker" onclick="sendSticker('📱')">📱</div>
+                    <div class="sticker" onclick="sendSticker('💻')">💻</div>
+                    <div class="sticker" onclick="sendSticker('🖥️')">🖥️</div>
+                    <div class="sticker" onclick="sendSticker('🖨️')">🖨️</div>
+                    <div class="sticker" onclick="sendSticker('🎧')">🎧</div>
+                    <div class="sticker" onclick="sendSticker('📷')">📷</div>
+                    <div class="sticker" onclick="sendSticker('🎮')">🎮</div>
+                </div>
+            </div>
+            <div class="sticker-category">
+                <div class="sticker-category-title">Simbol</div>
+                <div class="sticker-grid">
+                    <div class="sticker" onclick="sendSticker('❤️')">❤️</div>
+                    <div class="sticker" onclick="sendSticker('✨')">✨</div>
+                    <div class="sticker" onclick="sendSticker('🔥')">🔥</div>
+                    <div class="sticker" onclick="sendSticker('💯')">💯</div>
+                    <div class="sticker" onclick="sendSticker('⭐')">⭐</div>
+                    <div class="sticker" onclick="sendSticker('🎉')">🎉</div>
+                    <div class="sticker" onclick="sendSticker('🙏')">🙏</div>
+                    <div class="sticker" onclick="sendSticker('💪')">💪</div>
+                </div>
+            </div>
         </div>
         
         <div class="media-preview" id="media-preview">
@@ -3207,6 +3490,30 @@
                 <button class="camera-btn secondary" onclick="cancelMedia()">Batal</button>
                 <button class="camera-btn" onclick="sendMedia()">Kirim</button>
             </div>
+        </div>
+
+        <!-- BARU: Voice Note Recording -->
+        <div class="voice-note-container" id="voice-note-container" style="display:none;">
+            <div class="voice-note-visualizer">
+                <div class="voice-note-wave"></div>
+            </div>
+            <div class="voice-note-duration" id="voice-note-duration">00:00</div>
+            <div class="voice-note-controls">
+                <button class="voice-note-btn" id="stop-voice-btn" onclick="stopVoiceNote()">⏹️</button>
+                <button class="voice-note-btn" id="send-voice-btn" onclick="sendVoiceNote()" style="display:none;">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BARU: Halaman Daftar Pesan -->
+    <div class="messages-page" id="messages-page" style="display:none;">
+        <div class="messages-header">
+            <button class="back-btn" onclick="showHome()">←</button>
+            <h1 class="messages-title">Pesan</h1>
+        </div>
+        
+        <div class="messages-list" id="messages-list">
+            <!-- Daftar pesan akan ditampilkan di sini -->
         </div>
     </div>
 
@@ -3245,15 +3552,16 @@
         const USER_STORAGE_KEY = 'social_app_user';
         const SETTINGS_STORAGE_KEY = 'social_app_settings';
         const POSTS_STORAGE_KEY = 'social_app_posts';
-        const USERS_STORAGE_KEY = 'social_app_users'; // BARU: Untuk menyimpan semua pengguna
-        const RESET_TOKENS_KEY = 'social_app_reset_tokens'; // BARU: Untuk menyimpan token reset password
-        const CHATS_STORAGE_KEY = 'social_app_chats'; // BARU: Untuk menyimpan data chat
-        const FRIENDS_STORAGE_KEY = 'social_app_friends'; // BARU: Untuk menyimpan daftar teman
-        const FOLLOWERS_STORAGE_KEY = 'social_app_followers'; // BARU: Untuk menyimpan data followers
-        const SEARCH_HISTORY_KEY = 'social_app_search_history'; // BARU: Untuk menyimpan riwayat pencarian
-        const FRIEND_REQUESTS_KEY = 'social_app_friend_requests'; // BARU: Untuk menyimpan permintaan pertemanan
-        const POST_VIEWS_KEY = 'social_app_post_views'; // BARU: Untuk menyimpan data view per post per user
-        const LIKED_POSTS_KEY = 'social_app_liked_posts'; // BARU: Untuk menyimpan postingan yang disukai
+        const USERS_STORAGE_KEY = 'social_app_users';
+        const RESET_TOKENS_KEY = 'social_app_reset_tokens';
+        const CHATS_STORAGE_KEY = 'social_app_chats';
+        const FRIENDS_STORAGE_KEY = 'social_app_friends';
+        const FOLLOWERS_STORAGE_KEY = 'social_app_followers';
+        const SEARCH_HISTORY_KEY = 'social_app_search_history';
+        const FRIEND_REQUESTS_KEY = 'social_app_friend_requests';
+        const POST_VIEWS_KEY = 'social_app_post_views';
+        const LIKED_POSTS_KEY = 'social_app_liked_posts';
+        const ACTIVE_SESSIONS_KEY = 'social_app_active_sessions'; // BARU: Untuk melacak sesi aktif
         const DEFAULT_PROFILE_IMG = 'https://via.placeholder.com/80/927dfc/ffffff?text=U';
         
         // Data contoh pengguna untuk fitur pencarian teman
@@ -3289,15 +3597,27 @@
         // PERUBAHAN: Load settings dan posts dari localStorage
         let appSettings = loadSettings();
         let posts = loadPosts();
-        let allUsers = loadAllUsers(); // BARU: Load semua pengguna
-        let resetTokens = loadResetTokens(); // BARU: Load token reset password
-        let chats = loadChats(); // BARU: Load data chat
-        let friends = loadFriends(); // BARU: Load daftar teman
-        let followers = loadFollowers(); // BARU: Load data followers
-        let searchHistory = loadSearchHistory(); // BARU: Load riwayat pencarian
-        let friendRequests = loadFriendRequests(); // BARU: Load permintaan pertemanan
-        let postViews = loadPostViews(); // BARU: Load data view per post per user
-        let likedPosts = loadLikedPosts(); // BARU: Load postingan yang disukai
+        let allUsers = loadAllUsers();
+        let resetTokens = loadResetTokens();
+        let chats = loadChats();
+        let friends = loadFriends();
+        let followers = loadFollowers();
+        let searchHistory = loadSearchHistory();
+        let friendRequests = loadFriendRequests();
+        let postViews = loadPostViews();
+        let likedPosts = loadLikedPosts();
+        let activeSessions = loadActiveSessions(); // BARU: Load sesi aktif
+
+        // BARU: Fungsi untuk memuat sesi aktif
+        function loadActiveSessions() {
+            const storedSessions = localStorage.getItem(ACTIVE_SESSIONS_KEY);
+            return storedSessions ? JSON.parse(storedSessions) : {};
+        }
+
+        // BARU: Fungsi untuk menyimpan sesi aktif
+        function saveActiveSessions() {
+            localStorage.setItem(ACTIVE_SESSIONS_KEY, JSON.stringify(activeSessions));
+        }
 
         // BARU: Fungsi untuk memuat data permintaan pertemanan
         function loadFriendRequests() {
@@ -3412,6 +3732,13 @@
         // BARU: Variabel untuk status koneksi
         let isOnline = true;
 
+        // BARU: Variabel untuk voice note
+        let voiceRecorder = null;
+        let voiceRecording = false;
+        let voiceStartTime = null;
+        let voiceTimer = null;
+        let recordedVoice = null;
+
         // Fungsi untuk memuat data pengguna dari localStorage
         function loadUserData() {
             const storedData = localStorage.getItem(USER_STORAGE_KEY);
@@ -3511,6 +3838,7 @@
             document.getElementById('upload-page').style.display = 'none';
             document.getElementById('user-profile-page').style.display = 'none';
             document.getElementById('chat-page').style.display = 'none';
+            document.getElementById('messages-page').style.display = 'none';
             document.getElementById('search-page').style.display = 'none';
             document.getElementById('error-screen').style.display = 'none';
             
@@ -3578,6 +3906,22 @@
                 showErrorScreen();
             }
         });
+
+        // BARU: Fungsi untuk menampilkan modal
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+
+        // BARU: Fungsi untuk menutup modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // BARU: Fungsi untuk menutup modal dan kembali ke halaman awal
+        function closeModalAndGoBack(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            showWelcomeScreen();
+        }
 
         // Fungsi untuk menampilkan layar otentikasi tertentu
         function showRegister() { 
@@ -3683,7 +4027,7 @@
             document.getElementById('user-profile-page').style.display = 'block';
             
             // Cari data user berdasarkan ID
-            const user = sampleUsers.find(u => u.id === userId) || allUsers.find(u => u.id === userId);
+            const user = allUsers.find(u => u.id === userId);
             if (user) {
                 currentProfileUser = user;
                 updateProfilePage();
@@ -3965,6 +4309,16 @@
                         mediaHTML = `<video src="${message.media}" controls class="message-media"></video>`;
                     } else if (message.mediaType === 'sticker') {
                         mediaHTML = `<div style="font-size: 40px; text-align: center;">${message.media}</div>`;
+                    } else if (message.mediaType === 'voice') {
+                        mediaHTML = `
+                            <div class="voice-note-container" style="margin: 10px 0;">
+                                <div class="voice-note-visualizer">
+                                    <div class="voice-note-wave"></div>
+                                </div>
+                                <div class="voice-note-duration">${message.duration || '00:00'}</div>
+                                <button class="voice-note-btn" onclick="playVoiceNote('${message.media}')">▶️</button>
+                            </div>
+                        `;
                     }
                 }
                 
@@ -4078,6 +4432,160 @@
             
             // Sembunyikan media picker jika terbuka
             document.getElementById('media-preview').classList.remove('active');
+            
+            // Sembunyikan voice note jika terbuka
+            document.getElementById('voice-note-container').style.display = 'none';
+        }
+
+        // BARU: Fungsi untuk toggle voice note
+        function toggleVoiceNote() {
+            const voiceNoteContainer = document.getElementById('voice-note-container');
+            
+            if (voiceRecording) {
+                stopVoiceNote();
+            } else {
+                startVoiceNote();
+            }
+            
+            // Sembunyikan picker stiker dan media jika terbuka
+            document.getElementById('sticker-picker').classList.remove('active');
+            document.getElementById('media-preview').classList.remove('active');
+        }
+
+        // BARU: Fungsi untuk memulai rekaman voice note
+        function startVoiceNote() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('Browser Anda tidak mendukung rekaman audio');
+                return;
+            }
+            
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    voiceRecorder = new MediaRecorder(stream);
+                    const audioChunks = [];
+                    
+                    voiceRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
+                    
+                    voiceRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        recordedVoice = URL.createObjectURL(audioBlob);
+                        
+                        // Tampilkan tombol kirim
+                        document.getElementById('stop-voice-btn').style.display = 'none';
+                        document.getElementById('send-voice-btn').style.display = 'flex';
+                    };
+                    
+                    voiceRecorder.start();
+                    voiceRecording = true;
+                    
+                    // Tampilkan container voice note
+                    document.getElementById('voice-note-container').style.display = 'flex';
+                    
+                    // Mulai timer
+                    voiceStartTime = Date.now();
+                    updateVoiceTimer();
+                    
+                    // Sembunyikan tombol stop, tampilkan tombol kirim
+                    document.getElementById('stop-voice-btn').style.display = 'flex';
+                    document.getElementById('send-voice-btn').style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error accessing microphone:', error);
+                    alert('Tidak dapat mengakses mikrofon. Pastikan Anda memberikan izin akses mikrofon.');
+                });
+        }
+
+        // BARU: Fungsi untuk menghentikan rekaman voice note
+        function stopVoiceNote() {
+            if (voiceRecorder && voiceRecording) {
+                voiceRecorder.stop();
+                voiceRecording = false;
+                
+                // Hentikan timer
+                clearInterval(voiceTimer);
+                
+                // Hentikan semua track media
+                voiceRecorder.stream.getTracks().forEach(track => track.stop());
+            }
+        }
+
+        // BARU: Fungsi untuk mengirim voice note
+        function sendVoiceNote() {
+            if (!recordedVoice) return;
+            
+            // Hitung durasi
+            const duration = Math.floor((Date.now() - voiceStartTime) / 1000);
+            const minutes = Math.floor(duration / 60);
+            const seconds = duration % 60;
+            const durationText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Tambahkan pesan voice note ke chat
+            const newMessage = {
+                id: Date.now(),
+                sender: currentUser.email,
+                media: recordedVoice,
+                mediaType: 'voice',
+                duration: durationText,
+                timestamp: new Date().toISOString()
+            };
+            
+            chats[currentChatId].messages.push(newMessage);
+            saveChats();
+            
+            // Sembunyikan container voice note
+            document.getElementById('voice-note-container').style.display = 'none';
+            
+            // Reset variabel
+            recordedVoice = null;
+            voiceStartTime = null;
+            
+            // Tampilkan pesan baru
+            displayChatMessages();
+            
+            // Simulasi balasan
+            setTimeout(() => {
+                const replies = [
+                    "Wah, voice note-nya keren!",
+                    "Terima kasih sudah mengirim voice note!",
+                    "Saya akan mendengarnya nanti",
+                    "Suara Anda bagus!",
+                    "Voice note yang menarik!"
+                ];
+                
+                const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                
+                const replyMessage = {
+                    id: Date.now(),
+                    sender: currentChatUser.email || currentChatUser.id,
+                    text: randomReply,
+                    timestamp: new Date().toISOString()
+                };
+                
+                chats[currentChatId].messages.push(replyMessage);
+                saveChats();
+                displayChatMessages();
+            }, 1000 + Math.random() * 2000);
+        }
+
+        // BARU: Fungsi untuk memperbarui timer voice note
+        function updateVoiceTimer() {
+            voiceTimer = setInterval(() => {
+                if (voiceRecording) {
+                    const duration = Math.floor((Date.now() - voiceStartTime) / 1000);
+                    const minutes = Math.floor(duration / 60);
+                    const seconds = duration % 60;
+                    document.getElementById('voice-note-duration').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        // BARU: Fungsi untuk memutar voice note
+        function playVoiceNote(audioUrl) {
+            const audio = new Audio(audioUrl);
+            audio.play();
         }
 
         // BARU: Fungsi untuk toggle media picker
@@ -4123,6 +4631,9 @@
                     
                     // Sembunyikan sticker picker jika terbuka
                     document.getElementById('sticker-picker').classList.remove('active');
+                    
+                    // Sembunyikan voice note jika terbuka
+                    document.getElementById('voice-note-container').style.display = 'none';
                 };
                 
                 if (fileType === 'image') {
@@ -4148,6 +4659,9 @@
                     
                     // Sembunyikan sticker picker jika terbuka
                     document.getElementById('sticker-picker').classList.remove('active');
+                    
+                    // Sembunyikan voice note jika terbuka
+                    document.getElementById('voice-note-container').style.display = 'none';
                 }
             };
             
@@ -4236,6 +4750,126 @@
             
             // Tampilkan konten sesuai tab
             displayUserPosts();
+        }
+
+        // BARU: Fungsi untuk menampilkan halaman daftar pesan
+        function showMessagesPage() {
+            if (!isOnline) {
+                showErrorScreen();
+                return;
+            }
+            hideAllScreens();
+            document.getElementById('messages-page').style.display = 'flex';
+            
+            // Tampilkan daftar pesan
+            displayMessagesList();
+        }
+
+        // BARU: Fungsi untuk menampilkan daftar pesan
+        function displayMessagesList() {
+            const messagesList = document.getElementById('messages-list');
+            
+            // Dapatkan semua chat yang melibatkan current user
+            const userChats = Object.values(chats).filter(chat => 
+                chat.participants.includes(currentUser.email)
+            );
+            
+            if (userChats.length === 0) {
+                messagesList.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">💬</div>
+                        <h3>Belum ada pesan</h3>
+                        <p>Mulai percakapan dengan mengirim pesan ke pengguna lain</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let messagesHTML = '';
+            
+            userChats.forEach(chat => {
+                // Dapatkan peserta lain (bukan current user)
+                const otherParticipantEmail = chat.participants.find(email => email !== currentUser.email);
+                const otherParticipant = allUsers.find(user => user.email === otherParticipantEmail);
+                
+                if (!otherParticipant) return;
+                
+                // Dapatkan pesan terakhir
+                const lastMessage = chat.messages[chat.messages.length - 1];
+                if (!lastMessage) return;
+                
+                // Format waktu pesan terakhir
+                const messageTime = new Date(lastMessage.timestamp);
+                const now = new Date();
+                const diffMs = now - messageTime;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                const diffDays = Math.floor(diffMs / 86400000);
+                
+                let timeAgo = '';
+                if (diffMins < 1) {
+                    timeAgo = 'Baru saja';
+                } else if (diffMins < 60) {
+                    timeAgo = `${diffMins} menit lalu`;
+                } else if (diffHours < 24) {
+                    timeAgo = `${diffHours} jam lalu`;
+                } else {
+                    timeAgo = `${diffDays} hari lalu`;
+                }
+                
+                // Potong teks preview jika terlalu panjang
+                let messagePreview = '';
+                if (lastMessage.text) {
+                    messagePreview = lastMessage.text.length > 30 ? 
+                        lastMessage.text.substring(0, 30) + '...' : lastMessage.text;
+                } else if (lastMessage.mediaType === 'photo') {
+                    messagePreview = '📷 Foto';
+                } else if (lastMessage.mediaType === 'video') {
+                    messagePreview = '🎥 Video';
+                } else if (lastMessage.mediaType === 'sticker') {
+                    messagePreview = '😊 Stiker';
+                } else if (lastMessage.mediaType === 'voice') {
+                    messagePreview = '🎤 Voice Note';
+                }
+                
+                messagesHTML += `
+                    <div class="message-item" onclick="openChatFromList('${otherParticipant.email}')">
+                        <img src="${otherParticipant.avatar || otherParticipant.img || DEFAULT_PROFILE_IMG}" alt="${otherParticipant.name}" class="message-item-avatar">
+                        <div class="message-item-info">
+                            <div class="message-item-name">${otherParticipant.name}</div>
+                            <div class="message-item-preview">${messagePreview}</div>
+                        </div>
+                        <div class="message-item-time">${timeAgo}</div>
+                    </div>
+                `;
+            });
+            
+            messagesList.innerHTML = messagesHTML;
+        }
+
+        // BARU: Fungsi untuk membuka chat dari daftar pesan
+        function openChatFromList(userEmail) {
+            // Cari user berdasarkan email
+            const user = allUsers.find(u => u.email === userEmail);
+            if (!user) return;
+            
+            // Set currentChatUser
+            currentChatUser = user;
+            
+            // Generate chat ID
+            currentChatId = [currentUser.email, currentChatUser.email].sort().join('_');
+            
+            // Jika chat belum ada, buat chat baru
+            if (!chats[currentChatId]) {
+                chats[currentChatId] = {
+                    participants: [currentUser.email, currentChatUser.email],
+                    messages: []
+                };
+                saveChats();
+            }
+            
+            // Tampilkan halaman chat
+            showChatPage();
         }
 
         // BARU: Fungsi untuk menampilkan halaman upload
@@ -5381,6 +6015,12 @@
 
         // Fungsi untuk Logout
         function logout() {
+            // Hapus sesi aktif
+            if (currentUser.email) {
+                delete activeSessions[currentUser.email];
+                saveActiveSessions();
+            }
+            
             currentUser = {}; // Hapus data pengguna saat ini
             saveUserData({}); // Hapus data dari localStorage
             showWelcomeScreen(); // Kembali ke halaman awal
@@ -5503,10 +6143,10 @@
                 return;
             }
             
-            // Gabungkan sampleUsers dan allUsers untuk pencarian
-            const allAvailableUsers = [...sampleUsers, ...allUsers.filter(user => 
+            // Hanya gunakan allUsers untuk pencarian (tidak ada sampleUsers)
+            const allAvailableUsers = allUsers.filter(user => 
                 user.email !== currentUser.email && !friends.some(friend => friend.id === user.id || friend.email === user.email)
-            )];
+            );
             
             const filteredUsers = allAvailableUsers.filter(user => 
                 user.name.toLowerCase().includes(searchTerm) || 
@@ -5561,7 +6201,7 @@
             // Cari user berdasarkan ID atau email
             let user;
             if (userId && userId !== 'null') {
-                user = sampleUsers.find(u => u.id === userId) || allUsers.find(u => u.id === userId);
+                user = allUsers.find(u => u.id === userId);
             } else if (userEmail) {
                 user = allUsers.find(u => u.email === userEmail);
             }
@@ -5807,34 +6447,18 @@
             
             if (currentSearchTab === 'all' || currentSearchTab === 'accounts') {
                 // Cari akun
-                const accountResults = sampleUsers.filter(user => 
-                    user.name.toLowerCase().includes(searchTerm) || 
-                    user.username.toLowerCase().includes(searchTerm) ||
-                    user.bio.toLowerCase().includes(searchTerm)
-                );
-                
-                // Tambahkan akun dari allUsers
-                const allUserResults = allUsers.filter(user => 
+                const accountResults = allUsers.filter(user => 
                     user.name && user.name.toLowerCase().includes(searchTerm) && 
                     user.email !== currentUser.email
                 );
                 
-                const combinedAccountResults = [...accountResults, ...allUserResults];
-                
-                // Hapus duplikat
-                const uniqueAccountResults = combinedAccountResults.filter((user, index, self) => 
-                    index === self.findIndex(u => 
-                        (u.id && u.id === user.id) || (u.email && u.email === user.email)
-                    )
-                );
-                
-                if (uniqueAccountResults.length > 0) {
+                if (accountResults.length > 0) {
                     resultsHTML += `
                         <div class="search-section">
                             <div class="search-section-title">Akun</div>
                     `;
                     
-                    uniqueAccountResults.forEach(user => {
+                    accountResults.forEach(user => {
                         resultsHTML += `
                             <div class="user-result-item" onclick="showOtherUserProfile(${user.id || 'null'})">
                                 <img src="${user.avatar || user.img || DEFAULT_PROFILE_IMG}" alt="${user.name}" class="user-result-avatar">
@@ -5887,42 +6511,6 @@
                                         <span>${video.views} views</span>
                                         <span>${video.likes} likes</span>
                                     </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    resultsHTML += `
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-            
-            if (currentSearchTab === 'all' || currentSearchTab === 'live') {
-                // Cari live streaming
-                const liveResults = sampleLiveStreams.filter(live => 
-                    live.title.toLowerCase().includes(searchTerm) || 
-                    live.user.toLowerCase().includes(searchTerm) ||
-                    live.category.toLowerCase().includes(searchTerm)
-                );
-                
-                if (liveResults.length > 0) {
-                    resultsHTML += `
-                        <div class="search-section">
-                            <div class="search-section-title">Live</div>
-                            <div class="search-results-grid">
-                    `;
-                    
-                    liveResults.forEach(live => {
-                        resultsHTML += `
-                            <div class="live-result-item" onclick="watchLive(${live.id})">
-                                <img src="${live.thumbnail}" alt="${live.title}" class="search-result-media">
-                                <div class="live-badge">LIVE</div>
-                                <div class="live-viewers">${live.viewers} viewers</div>
-                                <div class="live-info">
-                                    <div class="live-title">${live.title}</div>
-                                    <div class="live-user">${live.user}</div>
                                 </div>
                             </div>
                         `;
@@ -6147,8 +6735,7 @@
             // Cek apakah email sudah terdaftar
             const existingUser = allUsers.find(user => user.email === email);
             if (existingUser) {
-                alert("Email sudah terdaftar! Silakan login.");
-                showLogin();
+                showModal('account-exists-modal');
                 return;
             }
             
@@ -6163,6 +6750,7 @@
 
             // Simpan user baru ke daftar semua pengguna
             allUsers.push({
+                id: Date.now(),
                 email: currentUser.email,
                 password: currentUser.password,
                 name: '',
@@ -6186,6 +6774,19 @@
             const user = allUsers.find(u => u.email === loginEmail && u.password === loginPassword);
             
             if (user) {
+                // BARU: Cek apakah akun sudah login di perangkat lain
+                if (activeSessions[user.email]) {
+                    showModal('account-logged-in-modal');
+                    return;
+                }
+                
+                // BARU: Simpan sesi aktif
+                activeSessions[user.email] = {
+                    timestamp: Date.now(),
+                    device: navigator.userAgent
+                };
+                saveActiveSessions();
+                
                 currentUser = user;
                 saveUserData(currentUser); // Simpan sebagai user aktif
                 uploadedFileUrl = currentUser.img;
@@ -6337,7 +6938,20 @@
                 // Cari user di daftar semua pengguna
                 const user = allUsers.find(u => u.email === storedUser.email);
                 if (user) {
+                    // BARU: Cek apakah akun sudah login di perangkat lain
+                    if (activeSessions[user.email]) {
+                        showModal('account-logged-in-modal');
+                        return;
+                    }
+                    
                     currentUser = user;
+                    
+                    // BARU: Simpan sesi aktif
+                    activeSessions[user.email] = {
+                        timestamp: Date.now(),
+                        device: navigator.userAgent
+                    };
+                    saveActiveSessions();
                     
                     // Jika ada data di localStorage, cek kelengkapan profil
                     if (currentUser.name && currentUser.img && currentUser.img !== DEFAULT_PROFILE_IMG) {
