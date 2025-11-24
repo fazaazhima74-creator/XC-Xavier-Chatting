@@ -2135,6 +2135,65 @@
             opacity: 0.5;
         }
 
+        /* BARU: Halaman Error Koneksi */
+        .error-container {
+            width: 90%;
+            max-width: 500px;
+            background: var(--card-color);
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .error-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+        }
+
+        .error-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-purple);
+            margin-bottom: 15px;
+        }
+
+        .error-message {
+            font-size: 16px;
+            margin-bottom: 30px;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .reload-btn {
+            padding: 15px 30px;
+            background-color: var(--accent-purple);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .reload-btn:hover {
+            background-color: #7a68e0;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(146, 125, 252, 0.3);
+        }
+
+        .connection-status {
+            font-size: 14px;
+            color: #ff6b6b;
+            font-weight: 600;
+        }
+
         /* Media Query Responsif */
         @media (max-width: 900px) {
             .home-container {
@@ -2265,6 +2324,18 @@
                 <span>Login</span>
             </button>
         </div>
+    </div>
+
+    <!-- BARU: Halaman Error Koneksi -->
+    <div class="error-container" id="error-screen" style="display:none;">
+        <div class="error-icon">📶</div>
+        <div class="error-title">Koneksi Terputus</div>
+        <div class="error-message">Tidak dapat terhubung ke internet. Periksa koneksi Anda dan coba lagi.</div>
+        <button class="reload-btn" onclick="checkConnection()">
+            <span class="btn-icon">🔄</span>
+            <span>Muat Ulang</span>
+        </button>
+        <div class="connection-status" id="connection-status">NON KONEKSI</div>
     </div>
 
     <div class="auth-container" id="auth-screen" style="display:none;">
@@ -3243,6 +3314,9 @@
         let currentSearchTab = 'all'; // Tab pencarian aktif
         let currentSearchQuery = ''; // Query pencarian saat ini
 
+        // BARU: Variabel untuk status koneksi
+        let isOnline = true;
+
         // Fungsi untuk memuat data pengguna dari localStorage
         function loadUserData() {
             const storedData = localStorage.getItem(USER_STORAGE_KEY);
@@ -3343,6 +3417,7 @@
             document.getElementById('user-profile-page').style.display = 'none';
             document.getElementById('chat-page').style.display = 'none';
             document.getElementById('search-page').style.display = 'none';
+            document.getElementById('error-screen').style.display = 'none';
             
             // Atur ulang centering body untuk auth screens
             document.body.style.display = 'flex';
@@ -3363,13 +3438,86 @@
             document.getElementById('reset-password-screen').style.display = 'block';
         }
 
+        // BARU: Fungsi untuk menampilkan halaman error koneksi
+        function showErrorScreen() {
+            hideAllScreens();
+            document.getElementById('error-screen').style.display = 'block';
+        }
+
+        // BARU: Fungsi untuk memeriksa koneksi internet
+        function checkConnection() {
+            isOnline = navigator.onLine;
+            
+            if (isOnline) {
+                // Jika koneksi tersedia, kembali ke halaman sebelumnya
+                if (currentUser && currentUser.email) {
+                    showHome();
+                } else {
+                    showWelcomeScreen();
+                }
+            } else {
+                // Jika masih offline, perbarui status
+                document.getElementById('connection-status').textContent = 'NON KONEKSI';
+                alert('Masih tidak dapat terhubung ke internet. Periksa koneksi Anda.');
+            }
+        }
+
+        // BARU: Event listener untuk perubahan status koneksi
+        window.addEventListener('online', function() {
+            isOnline = true;
+            // Jika sedang di halaman error, sembunyikan
+            if (document.getElementById('error-screen').style.display === 'block') {
+                checkConnection();
+            }
+        });
+
+        window.addEventListener('offline', function() {
+            isOnline = false;
+            // Tampilkan halaman error jika sedang di aplikasi
+            if (document.getElementById('welcome-screen').style.display !== 'block' && 
+                document.getElementById('auth-screen').style.display !== 'block' &&
+                document.getElementById('login-screen').style.display !== 'block' &&
+                document.getElementById('forgot-screen').style.display !== 'block' &&
+                document.getElementById('reset-password-screen').style.display !== 'block' &&
+                document.getElementById('profile-setup-screen').style.display !== 'block') {
+                showErrorScreen();
+            }
+        });
+
         // Fungsi untuk menampilkan layar otentikasi tertentu
-        function showRegister() { hideAllScreens(); document.getElementById('auth-screen').style.display = 'block'; }
-        function showLogin() { hideAllScreens(); document.getElementById('login-screen').style.display = 'block'; }
-        function showForgotPassword() { hideAllScreens(); document.getElementById('forgot-screen').style.display = 'block'; }
+        function showRegister() { 
+            if (!isOnline) {
+                showErrorScreen();
+                return;
+            }
+            hideAllScreens(); 
+            document.getElementById('auth-screen').style.display = 'block'; 
+        }
+        
+        function showLogin() { 
+            if (!isOnline) {
+                showErrorScreen();
+                return;
+            }
+            hideAllScreens(); 
+            document.getElementById('login-screen').style.display = 'block'; 
+        }
+        
+        function showForgotPassword() { 
+            if (!isOnline) {
+                showErrorScreen();
+                return;
+            }
+            hideAllScreens(); 
+            document.getElementById('forgot-screen').style.display = 'block'; 
+        }
         
         // Fungsi untuk menampilkan layar Setup Profil
         function showProfileSetup() {
+            if (!isOnline) {
+                showErrorScreen();
+                return;
+            }
              hideAllScreens();
              document.getElementById('profile-setup-screen').style.display = 'block';
              document.getElementById('upload-warning').style.display = 'none';
@@ -3377,6 +3525,10 @@
 
         // PERUBAHAN: Fungsi untuk menampilkan halaman profil
         function showProfilePage() {
+            if (!isOnline) {
+                showErrorScreen();
+                return;
+            }
             hideAllScreens();
             document.getElementById('profile-page').style.display = 'block';
             
@@ -3396,6 +3548,10 @@
 
         // PERUBAHAN: Fungsi untuk menampilkan halaman setting
         function showSettingsPage() {
+            if (!isOnline) {
+                showErrorScreen();
+                return;
+            }
             hideAllScreens();
             document.getElementById('settings-page').style.display = 'block';
             
@@ -3405,6 +3561,10 @@
 
         // BARU: Fungsi untuk menampilkan halaman profil pengguna
         function showUserProfilePage() {
+            if (!isOnline) {
+                showErrorScreen();
+                return;
+            }
             hideAllScreens();
             document.getElementById('user-profile-page').style.display = 'block';
             
@@ -3420,6 +3580,10 @@
 
         // BARU: Fungsi untuk menampilkan profil pengguna lain
         function showOtherUserProfile(userId) {
+            if (!isOnline) {
+                showErrorScreen();
+                return;
+            }
             hideAllScreens();
             document.getElementById('user-profile-page').style.display = 'block';
             
@@ -3626,6 +3790,10 @@
 
         // BARU: Fungsi untuk menampilkan halaman chat
         function showChatPage() {
+            if (!isOnline) {
+                showErrorScreen();
+                return;
+            }
             hideAllScreens();
             document.getElementById('chat-page').style.display = 'flex';
             
@@ -3956,6 +4124,10 @@
 
         // BARU: Fungsi untuk menampilkan halaman upload
         function showUploadPage() {
+            if (!isOnline) {
+                showErrorScreen();
+                return;
+            }
             hideAllScreens();
             document.getElementById('upload-page').style.display = 'flex';
             
@@ -4999,6 +5171,10 @@
         
         // Fungsi untuk menampilkan layar Beranda
         function showHome() {
+            if (!isOnline) {
+                showErrorScreen();
+                return;
+            }
             hideAllScreens();
             document.getElementById('home-screen').style.display = 'grid';
             
@@ -5026,6 +5202,10 @@
 
         // PERUBAHAN: Fungsi untuk menampilkan halaman video shorts
         function showShortsPage() {
+            if (!isOnline) {
+                showErrorScreen();
+                return;
+            }
             hideAllScreens();
             document.getElementById('shorts-page').style.display = 'block';
             
@@ -5315,6 +5495,10 @@
 
         // BARU: Fungsi untuk menampilkan halaman pencarian
         function showSearchPage() {
+            if (!isOnline) {
+                showErrorScreen();
+                return;
+            }
             hideAllScreens();
             document.getElementById('search-page').style.display = 'flex';
             
@@ -5812,6 +5996,9 @@
 
         // 8. Penanganan saat Halaman Dimuat
         function initApp() {
+            // Cek status koneksi
+            isOnline = navigator.onLine;
+            
             // Cek apakah ada user yang sudah login
             const storedUser = loadUserData();
             if (storedUser && storedUser.email) {
