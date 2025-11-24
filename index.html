@@ -2247,6 +2247,52 @@
             margin-left: auto;
         }
 
+        /* BARU: Gaya untuk notifikasi permintaan pertemanan */
+        .friend-request-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: background-color 0.2s;
+        }
+
+        .friend-request-item:hover {
+            background: rgba(146, 125, 252, 0.1);
+        }
+
+        .friend-request-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .friend-request-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .accept-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .decline-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .friend-request-btn:hover {
+            opacity: 0.8;
+        }
+
         /* Media Query Responsif */
         @media (max-width: 900px) {
             .home-container {
@@ -2507,7 +2553,7 @@
         <header class="header">
             <div class="header-profile-info">
                 <div class="app-logo">**App Logo**</div>
-                <img src="https://via.placeholder.com/80/927dfc/ffffff?text=U" alt="Foto Profil Pengguna" id="user-profile-pic-header" class="profile-pic" onclick="showEditProfile()">
+                <img src="https://via.placeholder.com/80/927dfc/ffffff?text=U" alt="Foto Profil Pengguna" id="user-profile-pic-header" class="profile-pic" onclick="showUserProfilePage()">
                 <span class="username" id="user-profile-name-header">**Nama Pengguna Anda**</span>
             </div>
             
@@ -2579,6 +2625,14 @@
                     <div class="friends-list-title">Teman Anda</div>
                     <div id="friendsContainer">
                         <!-- Daftar teman akan ditampilkan di sini -->
+                    </div>
+                </div>
+
+                <!-- BARU: Notifikasi Permintaan Pertemanan -->
+                <div class="friends-list" id="friendRequestsList" style="display: none;">
+                    <div class="friends-list-title">Permintaan Pertemanan</div>
+                    <div id="friendRequestsContainer">
+                        <!-- Permintaan pertemanan akan ditampilkan di sini -->
                     </div>
                 </div>
             </div>
@@ -3054,6 +3108,10 @@
                         <div class="stat-count" id="following-count">0</div>
                         <div class="stat-label">Mengikuti</div>
                     </div>
+                    <div class="stat-item">
+                        <div class="stat-count" id="friends-count">0</div>
+                        <div class="stat-label">Teman</div>
+                    </div>
                 </div>
                 
                 <div class="profile-actions" id="profile-actions">
@@ -3173,68 +3231,10 @@
             <!-- Hasil pencarian akan ditampilkan di sini -->
             <div id="search-results-container">
                 <!-- Konten default sebelum pencarian -->
-                <div class="search-section">
-                    <div class="search-section-title">Pencarian Terpopuler</div>
-                    <div class="search-results-grid">
-                        <div class="search-result-item" onclick="searchFor('youtube')">
-                            <img src="https://via.placeholder.com/150/ff6b6b/ffffff?text=YT" alt="YouTube" class="search-result-media">
-                            <div class="search-result-info">
-                                <div class="search-result-name">YouTube</div>
-                                <div class="search-result-stats">
-                                    <span>1.2M video</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="search-result-item" onclick="searchFor('tiktok')">
-                            <img src="https://via.placeholder.com/150/74d3ff/ffffff?text=TT" alt="TikTok" class="search-result-media">
-                            <div class="search-result-info">
-                                <div class="search-result-name">TikTok</div>
-                                <div class="search-result-stats">
-                                    <span>850K video</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="search-result-item" onclick="searchFor('instagram')">
-                            <img src="https://via.placeholder.com/150/ff74d9/ffffff?text=IG" alt="Instagram" class="search-result-media">
-                            <div class="search-result-info">
-                                <div class="search-result-name">Instagram</div>
-                                <div class="search-result-stats">
-                                    <span>980K video</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="search-result-item" onclick="searchFor('gaming')">
-                            <img src="https://via.placeholder.com/150/74ff98/ffffff?text=GM" alt="Gaming" class="search-result-media">
-                            <div class="search-result-info">
-                                <div class="search-result-name">Gaming</div>
-                                <div class="search-result-stats">
-                                    <span>650K video</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="search-section">
-                    <div class="search-section-title">Akun Populer</div>
-                    <div class="user-result-item" onclick="showOtherUserProfile(1)">
-                        <img src="https://via.placeholder.com/50/ff6b6b/ffffff?text=AR" alt="Ahmad Rizki" class="user-result-avatar">
-                        <div class="user-result-info">
-                            <div class="user-result-name">Ahmad Rizki</div>
-                            <div class="user-result-username">@ahmadrizki</div>
-                            <div class="user-result-bio">Content Creator & Traveler</div>
-                        </div>
-                        <button class="user-result-follow-btn">Follow</button>
-                    </div>
-                    <div class="user-result-item" onclick="showOtherUserProfile(2)">
-                        <img src="https://via.placeholder.com/50/ffe474/000000?text=SD" alt="Sari Dewi" class="user-result-avatar">
-                        <div class="user-result-info">
-                            <div class="user-result-name">Sari Dewi</div>
-                            <div class="user-result-username">@saridewi</div>
-                            <div class="user-result-bio">Beauty & Lifestyle</div>
-                        </div>
-                        <button class="user-result-follow-btn">Follow</button>
-                    </div>
+                <div class="no-results" id="search-default-content">
+                    <div class="no-results-icon">🔍</div>
+                    <h3>Cari video, akun, atau topik</h3>
+                    <p>Mulai mengetik untuk melihat hasil pencarian</p>
                 </div>
             </div>
         </div>
@@ -3251,6 +3251,9 @@
         const FRIENDS_STORAGE_KEY = 'social_app_friends'; // BARU: Untuk menyimpan daftar teman
         const FOLLOWERS_STORAGE_KEY = 'social_app_followers'; // BARU: Untuk menyimpan data followers
         const SEARCH_HISTORY_KEY = 'social_app_search_history'; // BARU: Untuk menyimpan riwayat pencarian
+        const FRIEND_REQUESTS_KEY = 'social_app_friend_requests'; // BARU: Untuk menyimpan permintaan pertemanan
+        const POST_VIEWS_KEY = 'social_app_post_views'; // BARU: Untuk menyimpan data view per post per user
+        const LIKED_POSTS_KEY = 'social_app_liked_posts'; // BARU: Untuk menyimpan postingan yang disukai
         const DEFAULT_PROFILE_IMG = 'https://via.placeholder.com/80/927dfc/ffffff?text=U';
         
         // Data contoh pengguna untuk fitur pencarian teman
@@ -3292,6 +3295,42 @@
         let friends = loadFriends(); // BARU: Load daftar teman
         let followers = loadFollowers(); // BARU: Load data followers
         let searchHistory = loadSearchHistory(); // BARU: Load riwayat pencarian
+        let friendRequests = loadFriendRequests(); // BARU: Load permintaan pertemanan
+        let postViews = loadPostViews(); // BARU: Load data view per post per user
+        let likedPosts = loadLikedPosts(); // BARU: Load postingan yang disukai
+
+        // BARU: Fungsi untuk memuat data permintaan pertemanan
+        function loadFriendRequests() {
+            const storedRequests = localStorage.getItem(FRIEND_REQUESTS_KEY);
+            return storedRequests ? JSON.parse(storedRequests) : {};
+        }
+
+        // BARU: Fungsi untuk menyimpan data permintaan pertemanan
+        function saveFriendRequests() {
+            localStorage.setItem(FRIEND_REQUESTS_KEY, JSON.stringify(friendRequests));
+        }
+
+        // BARU: Fungsi untuk memuat data view per post per user
+        function loadPostViews() {
+            const storedViews = localStorage.getItem(POST_VIEWS_KEY);
+            return storedViews ? JSON.parse(storedViews) : {};
+        }
+
+        // BARU: Fungsi untuk menyimpan data view per post per user
+        function savePostViews() {
+            localStorage.setItem(POST_VIEWS_KEY, JSON.stringify(postViews));
+        }
+
+        // BARU: Fungsi untuk memuat postingan yang disukai
+        function loadLikedPosts() {
+            const storedLikedPosts = localStorage.getItem(LIKED_POSTS_KEY);
+            return storedLikedPosts ? JSON.parse(storedLikedPosts) : {};
+        }
+
+        // BARU: Fungsi untuk menyimpan postingan yang disukai
+        function saveLikedPosts() {
+            localStorage.setItem(LIKED_POSTS_KEY, JSON.stringify(likedPosts));
+        }
 
         // BARU: Fungsi untuk memuat data followers
         function loadFollowers() {
@@ -3675,6 +3714,12 @@
             document.getElementById('followers-count').textContent = userFollowers.length;
             document.getElementById('following-count').textContent = userFollowing.length;
             
+            // BARU: Hitung jumlah teman
+            const userFriends = friends.filter(friend => 
+                friend.email === currentProfileUser.email || friend.id === currentProfileUser.id
+            );
+            document.getElementById('friends-count').textContent = userFriends.length;
+            
             // PERUBAHAN: Update tombol berdasarkan apakah ini profil sendiri atau profil orang lain
             updateProfileActions();
             
@@ -3772,14 +3817,35 @@
         // BARU: Fungsi untuk menampilkan postingan di halaman profil
         function displayUserPosts() {
             const postsContainer = document.getElementById('profile-posts-container');
-            const userPosts = posts.filter(post => 
-                post.userId === currentProfileUser.email || post.userId === currentProfileUser.id
-            );
+            let userPosts = [];
+            
+            if (currentProfileTab === 'posts') {
+                // Tampilkan postingan user
+                userPosts = posts.filter(post => 
+                    post.userId === currentProfileUser.email || post.userId === currentProfileUser.id
+                );
+            } else if (currentProfileTab === 'liked') {
+                // BARU: Tampilkan postingan yang disukai
+                const likedPostIds = likedPosts[currentUser.email] || [];
+                userPosts = posts.filter(post => likedPostIds.includes(post.id));
+            } else if (currentProfileTab === 'tagged') {
+                // Tampilkan postingan tersimpan (placeholder)
+                userPosts = [];
+            }
             
             if (userPosts.length === 0) {
+                let message = '';
+                if (currentProfileTab === 'posts') {
+                    message = 'Belum ada postingan';
+                } else if (currentProfileTab === 'liked') {
+                    message = 'Belum ada postingan yang disukai';
+                } else if (currentProfileTab === 'tagged') {
+                    message = 'Belum ada postingan yang disimpan';
+                }
+                
                 postsContainer.innerHTML = `
                     <div class="no-posts">
-                        <p>Belum ada postingan</p>
+                        <p>${message}</p>
                         ${currentProfileUser.email === currentUser.email || currentProfileUser.id === currentUser.id ? 
                             '<button class="camera-btn" onclick="showUploadPage()" style="margin-top: 15px;">Buat Postingan Pertama</button>' : 
                             ''}
@@ -4169,13 +4235,7 @@
             event.target.classList.add('active');
             
             // Tampilkan konten sesuai tab
-            if (tab === 'posts') {
-                displayUserPosts();
-            } else if (tab === 'tagged') {
-                document.getElementById('profile-posts-container').innerHTML = '<div class="no-posts"><p>Belum ada postingan yang disimpan</p></div>';
-            } else if (tab === 'liked') {
-                document.getElementById('profile-posts-container').innerHTML = '<div class="no-posts"><p>Belum ada postingan yang disukai</p></div>';
-            }
+            displayUserPosts();
         }
 
         // BARU: Fungsi untuk menampilkan halaman upload
@@ -4750,6 +4810,18 @@
             let postsHTML = '';
             
             posts.forEach(post => {
+                // BARU: Hitung views berdasarkan user yang sudah melihat
+                const postViewKey = `${post.id}_${currentUser.email}`;
+                let hasViewed = postViews[postViewKey];
+                
+                // Jika belum dilihat, tambahkan view dan tandai sudah dilihat
+                if (!hasViewed) {
+                    post.views++;
+                    postViews[postViewKey] = true;
+                    savePostViews();
+                    savePosts();
+                }
+                
                 let mediaHTML = '';
                 
                 if (post.type === 'photo') {
@@ -4779,6 +4851,10 @@
                     timeAgo = `${diffDays} hari lalu`;
                 }
                 
+                // BARU: Cek apakah post sudah dilike oleh user saat ini
+                const userLikedPosts = likedPosts[currentUser.email] || [];
+                const isLiked = userLikedPosts.includes(post.id);
+                
                 postsHTML += `
                     <div class="post" data-post-id="${post.id}">
                         <div class="post-header">
@@ -4797,8 +4873,8 @@
                             <span>${post.shares} x dibagikan</span>
                         </div>
                         <div class="post-actions">
-                            <div class="post-action ${post.liked ? 'active' : ''}" onclick="toggleLike(${post.id})">
-                                <div class="post-action-icon">${post.liked ? '❤️' : '🤍'}</div>
+                            <div class="post-action ${isLiked ? 'active' : ''}" onclick="toggleLike(${post.id})">
+                                <div class="post-action-icon">${isLiked ? '❤️' : '🤍'}</div>
                                 <div class="post-action-count">${post.likes}</div>
                             </div>
                             <div class="post-action" onclick="toggleComments(${post.id})">
@@ -4836,12 +4912,6 @@
             });
             
             postsContainer.innerHTML = postsHTML;
-            
-            // Tambahkan view untuk setiap postingan yang ditampilkan
-            posts.forEach(post => {
-                post.views++;
-            });
-            savePosts();
         }
 
         // BARU: Fungsi untuk toggle like pada postingan
@@ -4849,15 +4919,26 @@
             const post = posts.find(p => p.id === postId);
             if (!post) return;
             
-            if (post.liked) {
+            // Inisialisasi likedPosts untuk user saat ini jika belum ada
+            if (!likedPosts[currentUser.email]) {
+                likedPosts[currentUser.email] = [];
+            }
+            
+            const userLikedPosts = likedPosts[currentUser.email];
+            const isLiked = userLikedPosts.includes(postId);
+            
+            if (isLiked) {
+                // Unlike post
                 post.likes--;
-                post.liked = false;
+                likedPosts[currentUser.email] = userLikedPosts.filter(id => id !== postId);
             } else {
+                // Like post
                 post.likes++;
-                post.liked = true;
+                likedPosts[currentUser.email].push(postId);
             }
             
             savePosts();
+            saveLikedPosts();
             displayPosts();
         }
 
@@ -5254,6 +5335,9 @@
             
             // Tampilkan daftar teman
             displayFriends();
+            
+            // Tampilkan notifikasi permintaan pertemanan
+            displayFriendRequests();
         }
 
         // PERUBAHAN: Fungsi untuk menampilkan halaman video shorts
@@ -5449,6 +5533,10 @@
                     friend.id === user.id || friend.email === user.email
                 );
                 
+                // Cek apakah sudah ada permintaan pertemanan
+                const hasPendingRequest = friendRequests[currentUser.email] && 
+                    friendRequests[currentUser.email].some(req => req.id === user.id || req.email === user.email);
+                
                 resultsHTML += `
                     <div class="friend-result-item">
                         <div class="friend-info">
@@ -5458,8 +5546,8 @@
                                 <div class="friend-username">${user.username || user.email || ''}</div>
                             </div>
                         </div>
-                        <div class="add-friend-icon" onclick="addFriend(${user.id || 'null'}, '${user.email || ''}')" style="${isAlreadyFriend ? 'background: #4CAF50;' : ''}">
-                            ${isAlreadyFriend ? '✓' : '+'}
+                        <div class="add-friend-icon" onclick="addFriend(${user.id || 'null'}, '${user.email || ''}')" style="${isAlreadyFriend ? 'background: #4CAF50;' : hasPendingRequest ? 'background: #FFA500;' : ''}">
+                            ${isAlreadyFriend ? '✓' : hasPendingRequest ? '⏳' : '+'}
                         </div>
                     </div>
                 `;
@@ -5493,25 +5581,36 @@
                 return;
             }
             
-            // Tambahkan ke daftar teman
-            const newFriend = {
-                id: user.id || Date.now(),
-                name: user.name,
-                username: user.username,
-                email: user.email,
-                avatar: user.avatar || user.img || DEFAULT_PROFILE_IMG,
-                online: user.online || Math.random() > 0.5, // Random status online/offline
-                addedAt: new Date().toISOString()
+            // Cek apakah sudah ada permintaan pertemanan
+            const hasPendingRequest = friendRequests[currentUser.email] && 
+                friendRequests[currentUser.email].some(req => req.id === user.id || req.email === user.email);
+            
+            if (hasPendingRequest) {
+                alert(`Permintaan pertemanan ke ${user.name} sudah dikirim dan menunggu persetujuan!`);
+                return;
+            }
+            
+            // Kirim permintaan pertemanan
+            if (!friendRequests[user.email || user.id]) {
+                friendRequests[user.email || user.id] = [];
+            }
+            
+            const newRequest = {
+                id: currentUser.id || Date.now(),
+                name: currentUser.name,
+                username: currentUser.username,
+                email: currentUser.email,
+                avatar: currentUser.img || DEFAULT_PROFILE_IMG,
+                timestamp: new Date().toISOString()
             };
             
-            friends.push(newFriend);
-            saveFriends();
+            friendRequests[user.email || user.id].push(newRequest);
+            saveFriendRequests();
             
-            // Refresh tampilan pencarian dan daftar teman
+            // Refresh tampilan pencarian
             searchFriends();
-            displayFriends();
             
-            alert(`Anda telah menambahkan ${user.name} sebagai teman!`);
+            alert(`Permintaan pertemanan telah dikirim ke ${user.name}!`);
         }
 
         // BARU: Fungsi untuk menampilkan daftar teman
@@ -5541,6 +5640,104 @@
             });
             
             friendsContainer.innerHTML = friendsHTML;
+        }
+
+        // BARU: Fungsi untuk menampilkan notifikasi permintaan pertemanan
+        function displayFriendRequests() {
+            const friendRequestsContainer = document.getElementById('friendRequestsContainer');
+            const friendRequestsList = document.getElementById('friendRequestsList');
+            
+            const userRequests = friendRequests[currentUser.email] || [];
+            
+            if (userRequests.length === 0) {
+                friendRequestsList.style.display = 'none';
+                return;
+            }
+            
+            friendRequestsList.style.display = 'block';
+            
+            let requestsHTML = '';
+            
+            userRequests.forEach(request => {
+                requestsHTML += `
+                    <div class="friend-request-item">
+                        <img src="${request.avatar}" alt="${request.name}" class="friend-avatar">
+                        <div class="friend-details">
+                            <div class="friend-name">${request.name}</div>
+                            <div class="friend-username">${request.username || request.email || ''}</div>
+                        </div>
+                        <div class="friend-request-actions">
+                            <div class="friend-request-btn accept-btn" onclick="acceptFriendRequest('${request.email || request.id}')">+</div>
+                            <div class="friend-request-btn decline-btn" onclick="declineFriendRequest('${request.email || request.id}')">-</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            friendRequestsContainer.innerHTML = requestsHTML;
+        }
+
+        // BARU: Fungsi untuk menerima permintaan pertemanan
+        function acceptFriendRequest(requestEmail) {
+            // Cari permintaan
+            const userRequests = friendRequests[currentUser.email] || [];
+            const requestIndex = userRequests.findIndex(req => req.email === requestEmail || req.id === requestEmail);
+            
+            if (requestIndex === -1) {
+                alert('Permintaan tidak ditemukan!');
+                return;
+            }
+            
+            const request = userRequests[requestIndex];
+            
+            // Tambahkan ke daftar teman
+            const newFriend = {
+                id: request.id || Date.now(),
+                name: request.name,
+                username: request.username,
+                email: request.email,
+                avatar: request.avatar,
+                online: Math.random() > 0.5, // Random status online/offline
+                addedAt: new Date().toISOString()
+            };
+            
+            friends.push(newFriend);
+            saveFriends();
+            
+            // Hapus permintaan
+            userRequests.splice(requestIndex, 1);
+            friendRequests[currentUser.email] = userRequests;
+            saveFriendRequests();
+            
+            // Refresh tampilan
+            displayFriends();
+            displayFriendRequests();
+            
+            alert(`Anda dan ${request.name} sekarang berteman!`);
+        }
+
+        // BARU: Fungsi untuk menolak permintaan pertemanan
+        function declineFriendRequest(requestEmail) {
+            // Cari permintaan
+            const userRequests = friendRequests[currentUser.email] || [];
+            const requestIndex = userRequests.findIndex(req => req.email === requestEmail || req.id === requestEmail);
+            
+            if (requestIndex === -1) {
+                alert('Permintaan tidak ditemukan!');
+                return;
+            }
+            
+            const request = userRequests[requestIndex];
+            
+            // Hapus permintaan
+            userRequests.splice(requestIndex, 1);
+            friendRequests[currentUser.email] = userRequests;
+            saveFriendRequests();
+            
+            // Refresh tampilan
+            displayFriendRequests();
+            
+            alert(`Permintaan pertemanan dari ${request.name} telah ditolak.`);
         }
 
         // PERUBAHAN: Fungsi untuk mencari shorts
@@ -5576,71 +5773,13 @@
         function displayDefaultSearchContent() {
             const searchResultsContainer = document.getElementById('search-results-container');
             
-            let contentHTML = `
-                <div class="search-section">
-                    <div class="search-section-title">Pencarian Terpopuler</div>
-                    <div class="search-results-grid">
-                        <div class="search-result-item" onclick="searchFor('youtube')">
-                            <img src="https://via.placeholder.com/150/ff6b6b/ffffff?text=YT" alt="YouTube" class="search-result-media">
-                            <div class="search-result-info">
-                                <div class="search-result-name">YouTube</div>
-                                <div class="search-result-stats">
-                                    <span>1.2M video</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="search-result-item" onclick="searchFor('tiktok')">
-                            <img src="https://via.placeholder.com/150/74d3ff/ffffff?text=TT" alt="TikTok" class="search-result-media">
-                            <div class="search-result-info">
-                                <div class="search-result-name">TikTok</div>
-                                <div class="search-result-stats">
-                                    <span>850K video</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="search-result-item" onclick="searchFor('instagram')">
-                            <img src="https://via.placeholder.com/150/ff74d9/ffffff?text=IG" alt="Instagram" class="search-result-media">
-                            <div class="search-result-info">
-                                <div class="search-result-name">Instagram</div>
-                                <div class="search-result-stats">
-                                    <span>980K video</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="search-result-item" onclick="searchFor('gaming')">
-                            <img src="https://via.placeholder.com/150/74ff98/ffffff?text=GM" alt="Gaming" class="search-result-media">
-                            <div class="search-result-info">
-                                <div class="search-result-name">Gaming</div>
-                                <div class="search-result-stats">
-                                    <span>650K video</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            searchResultsContainer.innerHTML = `
+                <div class="no-results" id="search-default-content">
+                    <div class="no-results-icon">🔍</div>
+                    <h3>Cari video, akun, atau topik</h3>
+                    <p>Mulai mengetik untuk melihat hasil pencarian</p>
                 </div>
-                
-                <div class="search-section">
-                    <div class="search-section-title">Akun Populer</div>
             `;
-            
-            // Tambahkan akun populer
-            sampleUsers.slice(0, 2).forEach(user => {
-                contentHTML += `
-                    <div class="user-result-item" onclick="showOtherUserProfile(${user.id})">
-                        <img src="${user.avatar}" alt="${user.name}" class="user-result-avatar">
-                        <div class="user-result-info">
-                            <div class="user-result-name">${user.name}</div>
-                            <div class="user-result-username">${user.username}</div>
-                            <div class="user-result-bio">${user.bio}</div>
-                        </div>
-                        <button class="user-result-follow-btn">Follow</button>
-                    </div>
-                `;
-            });
-            
-            contentHTML += `</div>`;
-            
-            searchResultsContainer.innerHTML = contentHTML;
         }
 
         // BARU: Fungsi untuk melakukan pencarian
