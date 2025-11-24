@@ -347,6 +347,7 @@
             flex-grow: 1;
             max-width: 600px;
             margin: 0 20px;
+            position: relative;
         }
         .search-bar input {
             width: 100%;
@@ -2194,6 +2195,58 @@
             font-weight: 600;
         }
 
+        /* BARU: Gaya untuk dropdown search suggestions */
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--card-color);
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-top: none;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+
+        .search-suggestions.active {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .suggestion-item:hover {
+            background: rgba(146, 125, 252, 0.1);
+        }
+
+        .suggestion-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--accent-purple);
+        }
+
+        .suggestion-text {
+            font-size: 14px;
+        }
+
+        .suggestion-type {
+            font-size: 12px;
+            color: #a0a0a0;
+            margin-left: auto;
+        }
+
         /* Media Query Responsif */
         @media (max-width: 900px) {
             .home-container {
@@ -2459,7 +2512,10 @@
             </div>
             
             <div class="search-bar">
-                <input type="text" placeholder="Cari Video, Akun, Topik, atau Lainnya..." onclick="showSearchPage()">
+                <input type="text" id="main-search-input" placeholder="Cari Video, Akun, Topik, atau Lainnya..." oninput="handleSearchInput(event)" onfocus="showSearchSuggestions()">
+                <div class="search-suggestions" id="search-suggestions">
+                    <!-- Saran pencarian akan ditampilkan di sini -->
+                </div>
             </div>
             
             <div class="menu-wrapper">
@@ -5618,20 +5674,35 @@
                     user.bio.toLowerCase().includes(searchTerm)
                 );
                 
-                if (accountResults.length > 0) {
+                // Tambahkan akun dari allUsers
+                const allUserResults = allUsers.filter(user => 
+                    user.name && user.name.toLowerCase().includes(searchTerm) && 
+                    user.email !== currentUser.email
+                );
+                
+                const combinedAccountResults = [...accountResults, ...allUserResults];
+                
+                // Hapus duplikat
+                const uniqueAccountResults = combinedAccountResults.filter((user, index, self) => 
+                    index === self.findIndex(u => 
+                        (u.id && u.id === user.id) || (u.email && u.email === user.email)
+                    )
+                );
+                
+                if (uniqueAccountResults.length > 0) {
                     resultsHTML += `
                         <div class="search-section">
                             <div class="search-section-title">Akun</div>
                     `;
                     
-                    accountResults.forEach(user => {
+                    uniqueAccountResults.forEach(user => {
                         resultsHTML += `
-                            <div class="user-result-item" onclick="showOtherUserProfile(${user.id})">
-                                <img src="${user.avatar}" alt="${user.name}" class="user-result-avatar">
+                            <div class="user-result-item" onclick="showOtherUserProfile(${user.id || 'null'})">
+                                <img src="${user.avatar || user.img || DEFAULT_PROFILE_IMG}" alt="${user.name}" class="user-result-avatar">
                                 <div class="user-result-info">
                                     <div class="user-result-name">${user.name}</div>
-                                    <div class="user-result-username">${user.username}</div>
-                                    <div class="user-result-bio">${user.bio}</div>
+                                    <div class="user-result-username">${user.username || user.email || ''}</div>
+                                    <div class="user-result-bio">${user.bio || ''}</div>
                                 </div>
                                 <button class="user-result-follow-btn">Follow</button>
                             </div>
@@ -5643,10 +5714,11 @@
             }
             
             if (currentSearchTab === 'all' || currentSearchTab === 'videos') {
-                // Cari video
-                const videoResults = sampleVideos.filter(video => 
-                    video.title.toLowerCase().includes(searchTerm) || 
-                    video.user.toLowerCase().includes(searchTerm)
+                // Cari video dari postingan
+                const videoResults = posts.filter(post => 
+                    (post.description && post.description.toLowerCase().includes(searchTerm)) ||
+                    (post.userName && post.userName.toLowerCase().includes(searchTerm)) ||
+                    (post.type === 'video' && searchTerm.includes('video'))
                 );
                 
                 if (videoResults.length > 0) {
@@ -5657,11 +5729,21 @@
                     `;
                     
                     videoResults.forEach(video => {
+                        let thumbnail = '';
+                        if (video.type === 'photo') {
+                            thumbnail = video.media;
+                        } else if (video.type === 'video') {
+                            // Untuk video, kita bisa menggunakan placeholder atau frame pertama
+                            thumbnail = 'https://via.placeholder.com/150/927dfc/ffffff?text=Video';
+                        } else {
+                            thumbnail = 'https://via.placeholder.com/150/927dfc/ffffff?text=Post';
+                        }
+                        
                         resultsHTML += `
-                            <div class="search-result-item" onclick="playVideo(${video.id})">
-                                <img src="${video.thumbnail}" alt="${video.title}" class="search-result-media">
+                            <div class="search-result-item" onclick="openPost(${video.id})">
+                                <img src="${thumbnail}" alt="${video.description || 'Postingan'}" class="search-result-media">
                                 <div class="search-result-info">
-                                    <div class="search-result-name">${video.title}</div>
+                                    <div class="search-result-name">${video.description ? (video.description.substring(0, 20) + '...') : 'Postingan'}</div>
                                     <div class="search-result-stats">
                                         <span>${video.views} views</span>
                                         <span>${video.likes} likes</span>
@@ -5793,6 +5875,117 @@
                 performSearch(this.value);
             }
         });
+
+        // BARU: Fungsi untuk menangani input pencarian di header
+        function handleSearchInput(event) {
+            const query = event.target.value;
+            const suggestionsContainer = document.getElementById('search-suggestions');
+            
+            if (query.length > 0) {
+                showSearchSuggestions(query);
+            } else {
+                suggestionsContainer.classList.remove('active');
+            }
+        }
+
+        // BARU: Fungsi untuk menampilkan saran pencarian
+        function showSearchSuggestions(query) {
+            const suggestionsContainer = document.getElementById('search-suggestions');
+            const searchTerm = query.toLowerCase();
+            
+            // Cari akun yang sesuai
+            const accountSuggestions = allUsers.filter(user => 
+                user.name && user.name.toLowerCase().includes(searchTerm) && 
+                user.email !== currentUser.email
+            ).slice(0, 3); // Batasi hingga 3 hasil
+            
+            // Cari postingan yang sesuai
+            const postSuggestions = posts.filter(post => 
+                post.description && post.description.toLowerCase().includes(searchTerm)
+            ).slice(0, 2); // Batasi hingga 2 hasil
+            
+            let suggestionsHTML = '';
+            
+            // Tambahkan saran akun
+            accountSuggestions.forEach(user => {
+                suggestionsHTML += `
+                    <div class="suggestion-item" onclick="searchFor('${user.name}')">
+                        <img src="${user.img || DEFAULT_PROFILE_IMG}" alt="${user.name}" class="suggestion-avatar">
+                        <div class="suggestion-text">${user.name}</div>
+                        <div class="suggestion-type">Akun</div>
+                    </div>
+                `;
+            });
+            
+            // Tambahkan saran postingan
+            postSuggestions.forEach(post => {
+                suggestionsHTML += `
+                    <div class="suggestion-item" onclick="openPost(${post.id})">
+                        <div class="suggestion-text">${post.description.substring(0, 30)}...</div>
+                        <div class="suggestion-type">Postingan</div>
+                    </div>
+                `;
+            });
+            
+            // Tambahkan saran untuk membuka halaman pencarian lengkap
+            if (accountSuggestions.length > 0 || postSuggestions.length > 0) {
+                suggestionsHTML += `
+                    <div class="suggestion-item" onclick="showSearchPage(); document.getElementById('search-input').value = '${query}'; performSearch('${query}');">
+                        <div class="suggestion-text" style="font-weight: 600;">Lihat semua hasil untuk "${query}"</div>
+                        <div class="suggestion-type">›</div>
+                    </div>
+                `;
+            }
+            
+            suggestionsContainer.innerHTML = suggestionsHTML;
+            suggestionsContainer.classList.add('active');
+        }
+
+        // BARU: Fungsi untuk menampilkan saran pencarian saat fokus
+        function showSearchSuggestions() {
+            const searchInput = document.getElementById('main-search-input');
+            const query = searchInput.value;
+            
+            if (query.length > 0) {
+                showSearchSuggestions(query);
+            } else {
+                // Tampilkan riwayat pencarian jika ada
+                const suggestionsContainer = document.getElementById('search-suggestions');
+                
+                if (searchHistory.length > 0) {
+                    let suggestionsHTML = `
+                        <div class="suggestion-item" style="font-weight: 600; color: var(--accent-purple);">
+                            Riwayat Pencarian
+                        </div>
+                    `;
+                    
+                    searchHistory.forEach(term => {
+                        suggestionsHTML += `
+                            <div class="suggestion-item" onclick="searchFor('${term}')">
+                                <div class="suggestion-text">${term}</div>
+                                <div class="suggestion-type">›</div>
+                            </div>
+                        `;
+                    });
+                    
+                    suggestionsHTML += `
+                        <div class="suggestion-item" onclick="clearSearchHistory()" style="color: #ff6b6b;">
+                            <div class="suggestion-text">Hapus Riwayat Pencarian</div>
+                        </div>
+                    `;
+                    
+                    suggestionsContainer.innerHTML = suggestionsHTML;
+                    suggestionsContainer.classList.add('active');
+                }
+            }
+        }
+
+        // BARU: Fungsi untuk menghapus riwayat pencarian
+        function clearSearchHistory() {
+            searchHistory = [];
+            saveSearchHistory();
+            document.getElementById('search-suggestions').classList.remove('active');
+        }
 
         // 1. Proses Pendaftaran -> Lanjut ke Setup Profil
         document.getElementById('register-form').addEventListener('submit', function(e) {
