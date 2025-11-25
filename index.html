@@ -2493,6 +2493,71 @@
             background: #7a68e0;
         }
 
+        /* BARU: Notifikasi Nama Sudah Terdaftar */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            max-width: 350px;
+        }
+
+        .notification {
+            background: var(--card-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            margin-bottom: 15px;
+            transform: translateX(400px);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-icon {
+            font-size: 28px;
+            color: #ff6b6b;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: var(--accent-purple);
+        }
+
+        .notification-message {
+            font-size: 14px;
+            color: var(--text-color);
+            line-height: 1.4;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .notification-close:hover {
+            opacity: 1;
+        }
+
         /* Media Query Responsif */
         @media (max-width: 900px) {
             .home-container {
@@ -2603,10 +2668,23 @@
             .search-tab {
                 padding: 15px;
             }
+
+            /* Responsif untuk notifikasi */
+            .notification-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
         }
     </style>
 </head>
 <body>
+
+    <!-- BARU: Container untuk Notifikasi -->
+    <div class="notification-container" id="notification-container">
+        <!-- Notifikasi akan ditambahkan di sini secara dinamis -->
+    </div>
 
     <!-- HALAMAN AWAL BARU -->
     <div class="welcome-container" id="welcome-screen">
@@ -3608,6 +3686,9 @@
         let likedPosts = loadLikedPosts();
         let activeSessions = loadActiveSessions(); // BARU: Load sesi aktif
 
+        // BARU: Variabel untuk menyimpan halaman terakhir sebelum disconnect
+        let lastScreenBeforeDisconnect = null;
+
         // BARU: Fungsi untuk memuat sesi aktif
         function loadActiveSessions() {
             const storedSessions = localStorage.getItem(ACTIVE_SESSIONS_KEY);
@@ -3873,7 +3954,32 @@
             
             if (isOnline) {
                 // Jika koneksi tersedia, kembali ke halaman sebelumnya
-                if (currentUser && currentUser.email) {
+                if (lastScreenBeforeDisconnect) {
+                    // Kembali ke halaman terakhir sebelum disconnect
+                    if (lastScreenBeforeDisconnect === 'home-screen') {
+                        showHome();
+                    } else if (lastScreenBeforeDisconnect === 'profile-page') {
+                        showProfilePage();
+                    } else if (lastScreenBeforeDisconnect === 'settings-page') {
+                        showSettingsPage();
+                    } else if (lastScreenBeforeDisconnect === 'shorts-page') {
+                        showShortsPage();
+                    } else if (lastScreenBeforeDisconnect === 'upload-page') {
+                        showUploadPage();
+                    } else if (lastScreenBeforeDisconnect === 'user-profile-page') {
+                        showUserProfilePage();
+                    } else if (lastScreenBeforeDisconnect === 'chat-page') {
+                        showChatPage();
+                    } else if (lastScreenBeforeDisconnect === 'messages-page') {
+                        showMessagesPage();
+                    } else if (lastScreenBeforeDisconnect === 'search-page') {
+                        showSearchPage();
+                    } else {
+                        // Default ke beranda
+                        showHome();
+                    }
+                    lastScreenBeforeDisconnect = null;
+                } else if (currentUser && currentUser.email) {
                     showHome();
                 } else {
                     showWelcomeScreen();
@@ -3896,6 +4002,27 @@
 
         window.addEventListener('offline', function() {
             isOnline = false;
+            // Simpan halaman saat ini sebelum disconnect
+            if (document.getElementById('home-screen').style.display !== 'none') {
+                lastScreenBeforeDisconnect = 'home-screen';
+            } else if (document.getElementById('profile-page').style.display !== 'none') {
+                lastScreenBeforeDisconnect = 'profile-page';
+            } else if (document.getElementById('settings-page').style.display !== 'none') {
+                lastScreenBeforeDisconnect = 'settings-page';
+            } else if (document.getElementById('shorts-page').style.display !== 'none') {
+                lastScreenBeforeDisconnect = 'shorts-page';
+            } else if (document.getElementById('upload-page').style.display !== 'none') {
+                lastScreenBeforeDisconnect = 'upload-page';
+            } else if (document.getElementById('user-profile-page').style.display !== 'none') {
+                lastScreenBeforeDisconnect = 'user-profile-page';
+            } else if (document.getElementById('chat-page').style.display !== 'none') {
+                lastScreenBeforeDisconnect = 'chat-page';
+            } else if (document.getElementById('messages-page').style.display !== 'none') {
+                lastScreenBeforeDisconnect = 'messages-page';
+            } else if (document.getElementById('search-page').style.display !== 'none') {
+                lastScreenBeforeDisconnect = 'search-page';
+            }
+            
             // Tampilkan halaman error jika sedang di aplikasi
             if (document.getElementById('welcome-screen').style.display !== 'block' && 
                 document.getElementById('auth-screen').style.display !== 'block' &&
@@ -3921,6 +4048,41 @@
         function closeModalAndGoBack(modalId) {
             document.getElementById(modalId).style.display = 'none';
             showWelcomeScreen();
+        }
+
+        // BARU: Fungsi untuk menampilkan notifikasi nama sudah terdaftar
+        function showNameExistsNotification(name) {
+            const notificationContainer = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = `
+                <div class="notification-icon">⚠️</div>
+                <div class="notification-content">
+                    <div class="notification-title">Nama Sudah Digunakan</div>
+                    <div class="notification-message">Nama "<strong>${name}</strong>" sudah digunakan oleh pengguna lain. Silakan gunakan nama yang berbeda.</div>
+                </div>
+                <button class="notification-close" onclick="this.parentElement.remove()">✕</button>
+            `;
+            
+            notificationContainer.appendChild(notification);
+            
+            // Tampilkan notifikasi dengan animasi
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Hapus notifikasi setelah 5 detik
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentElement) {
+                            notification.remove();
+                        }
+                    }, 500);
+                }
+            }, 5000);
         }
 
         // Fungsi untuk menampilkan layar otentikasi tertentu
@@ -6104,6 +6266,18 @@
                 return;
             }
             
+            // BARU: Cek apakah nama sudah digunakan oleh pengguna lain
+            const existingUser = allUsers.find(user => 
+                user.name === newName && 
+                user.email !== currentUser.email
+            );
+            
+            if (existingUser) {
+                // Tampilkan notifikasi nama sudah terdaftar
+                showNameExistsNotification(newName);
+                return;
+            }
+            
             currentUser.name = newName;
             saveUserData(currentUser);
             
@@ -6900,6 +7074,18 @@
             if (!uploadedFileUrl || profileName.trim() === '') {
                 uploadWarning.style.display = 'block';
                 alert("Mohon lengkapi **Nama Profil** dan **Unggah Foto Profil** sebelum melanjutkan.");
+                return;
+            }
+            
+            // BARU: Cek apakah nama sudah digunakan oleh pengguna lain
+            const existingUser = allUsers.find(user => 
+                user.name === profileName && 
+                user.email !== currentUser.email
+            );
+            
+            if (existingUser) {
+                // Tampilkan notifikasi nama sudah terdaftar
+                showNameExistsNotification(profileName);
                 return;
             }
             
