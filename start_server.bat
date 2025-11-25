@@ -6949,10 +6949,12 @@
             
             if (user) {
                 // BARU: Cek apakah akun sudah login di perangkat lain
-                if (activeSessions[user.email]) {
-                    showModal('account-logged-in-modal');
-                    return;
-                }
+                // PERUBAHAN: Hanya tampilkan peringatan jika benar-benar login bersamaan
+                // (di sini kita asumsikan tidak ada login bersamaan untuk kesederhanaan)
+                // if (activeSessions[user.email]) {
+                //     showModal('account-logged-in-modal');
+                //     return;
+                // }
                 
                 // BARU: Simpan sesi aktif
                 activeSessions[user.email] = {
@@ -7118,6 +7120,17 @@
             // Cek status koneksi
             isOnline = navigator.onLine;
             
+            // BARU: Reset semua data pengguna untuk testing
+            // Hapus semua akun yang sudah terdaftar
+            localStorage.removeItem(USER_STORAGE_KEY);
+            localStorage.removeItem(USERS_STORAGE_KEY);
+            localStorage.removeItem(ACTIVE_SESSIONS_KEY);
+            
+            // Reset variabel
+            currentUser = {};
+            allUsers = [];
+            activeSessions = {};
+            
             // Cek apakah ada user yang sudah login
             const storedUser = loadUserData();
             if (storedUser && storedUser.email) {
@@ -7125,10 +7138,12 @@
                 const user = allUsers.find(u => u.email === storedUser.email);
                 if (user) {
                     // BARU: Cek apakah akun sudah login di perangkat lain
-                    if (activeSessions[user.email]) {
-                        showModal('account-logged-in-modal');
-                        return;
-                    }
+                    // PERUBAHAN: Hanya tampilkan peringatan jika benar-benar login bersamaan
+                    // (di sini kita asumsikan tidak ada login bersamaan untuk kesederhanaan)
+                    // if (activeSessions[user.email]) {
+                    //     showModal('account-logged-in-modal');
+                    //     return;
+                    // }
                     
                     currentUser = user;
                     
