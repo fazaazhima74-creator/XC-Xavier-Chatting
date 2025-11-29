@@ -2293,6 +2293,280 @@
             opacity: 0.8;
         }
 
+        /* BARU: Halaman Kamera Full Screen */
+        .camera-fullscreen {
+            width: 100%;
+            height: 100vh;
+            background: var(--bg-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .camera-fullscreen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            z-index: 10;
+        }
+
+        .camera-fullscreen-preview {
+            flex: 1;
+            position: relative;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .camera-fullscreen-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .camera-fullscreen-preview canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        .camera-fullscreen-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            gap: 20px;
+        }
+
+        .camera-fullscreen-buttons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .camera-fullscreen-capture-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: white;
+            border: 5px solid var(--accent-purple);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: var(--accent-purple);
+        }
+
+        .camera-fullscreen-secondary-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .camera-fullscreen-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .camera-fullscreen-option {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .camera-fullscreen-option.active {
+            background: var(--accent-purple);
+        }
+
+        /* BARU: Halaman Editor Foto */
+        .photo-editor-page {
+            width: 100%;
+            height: 100vh;
+            background: var(--bg-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .photo-editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: var(--card-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .photo-editor-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .photo-editor-preview {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--card-color);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .photo-editor-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .photo-editor-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: var(--card-color);
+            border-radius: 15px;
+            padding: 20px;
+            max-height: 40vh;
+            overflow-y: auto;
+        }
+
+        .photo-editor-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+
+        .photo-editor-tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .photo-editor-tab.active {
+            border-bottom: 2px solid var(--accent-purple);
+            color: var(--accent-purple);
+            font-weight: 600;
+        }
+
+        .photo-editor-tab:hover {
+            background: rgba(146, 125, 252, 0.1);
+        }
+
+        .photo-editor-tab-content {
+            display: none;
+        }
+
+        .photo-editor-tab-content.active {
+            display: block;
+        }
+
+        .photo-editor-stickers {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .photo-editor-sticker {
+            font-size: 30px;
+            text-align: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .photo-editor-sticker:hover {
+            background: rgba(146, 125, 252, 0.1);
+        }
+
+        .photo-editor-filter-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .photo-editor-filter-option {
+            padding: 10px;
+            text-align: center;
+            background: rgba(146, 125, 252, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .photo-editor-filter-option:hover {
+            background: rgba(146, 125, 252, 0.2);
+        }
+
+        .photo-editor-filter-option.active {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .photo-editor-adjustment {
+            margin-bottom: 15px;
+        }
+
+        .photo-editor-adjustment label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--accent-purple);
+        }
+
+        .photo-editor-adjustment input {
+            width: 100%;
+        }
+
+        .photo-editor-sticker-preview {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+            z-index: 10;
+        }
+
+        .photo-editor-sticker-preview img {
+            max-width: 100px;
+            max-height: 100px;
+        }
+
         /* Media Query Responsif */
         @media (max-width: 900px) {
             .home-container {
@@ -2402,6 +2676,24 @@
             }
             .search-tab {
                 padding: 15px;
+            }
+
+            /* Responsif untuk halaman kamera fullscreen */
+            .camera-fullscreen-options {
+                flex-direction: column;
+                align-items: center;
+            }
+            .camera-fullscreen-option {
+                width: 100%;
+                text-align: center;
+            }
+
+            /* Responsif untuk halaman editor foto */
+            .photo-editor-stickers {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .photo-editor-filter-options {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -2890,61 +3182,19 @@
         <div class="shorts-content" id="shorts-content">
             <!-- Video shorts akan ditampilkan di sini -->
             <div class="short-video">
-                <video src="https://assets.mixkit.co/videos/preview/mixkit-tree-with-yellow-flowers-1173-large.mp4" controls autoplay muted loop></video>
+                <video src="" controls autoplay muted loop></video>
                 <div class="video-info">
-                    <h3>@pengguna1</h3>
-                    <p>Video pendek menarik pertama! #shorts #trending</p>
+                    <h3 id="shorts-username">@pengguna</h3>
+                    <p id="shorts-description">Deskripsi video pendek</p>
                 </div>
                 <div class="video-actions">
                     <button class="action-btn">
                         <div class="action-icon">❤️</div>
-                        <div class="action-count">1.2K</div>
+                        <div class="action-count" id="shorts-likes">0</div>
                     </button>
                     <button class="action-btn">
                         <div class="action-icon">💬</div>
-                        <div class="action-count">245</div>
-                    </button>
-                    <button class="action-btn">
-                        <div class="action-icon">↗️</div>
-                        <div class="action-count">Share</div>
-                    </button>
-                </div>
-            </div>
-            <div class="short-video">
-                <video src="https://assets.mixkit.co/videos/preview/mixkit-going-down-a-curved-highway-through-a-mountain-34561-large.mp4" controls autoplay muted loop></video>
-                <div class="video-info">
-                    <h3>@pengguna2</h3>
-                    <p>Pemandangan indah di perjalanan #nature #travel</p>
-                </div>
-                <div class="video-actions">
-                    <button class="action-btn">
-                        <div class="action-icon">❤️</div>
-                        <div class="action-count">2.5K</div>
-                    </button>
-                    <button class="action-btn">
-                        <div class="action-icon">💬</div>
-                        <div class="action-count">512</div>
-                    </button>
-                    <button class="action-btn">
-                        <div class="action-icon">↗️</div>
-                        <div class="action-count">Share</div>
-                    </button>
-                </div>
-            </div>
-            <div class="short-video">
-                <video src="https://assets.mixkit.co/videos/preview/mixkit-a-girl-blowing-a-bubblegum-balloon-1231-large.mp4" controls autoplay muted loop></video>
-                <div class="video-info">
-                    <h3>@pengguna3</h3>
-                    <p>Funny moment dengan teman-teman #fun #comedy</p>
-                </div>
-                <div class="video-actions">
-                    <button class="action-btn">
-                        <div class="action-icon">❤️</div>
-                        <div class="action-count">3.7K</div>
-                    </button>
-                    <button class="action-btn">
-                        <div class="action-icon">💬</div>
-                        <div class="action-count">891</div>
+                        <div class="action-count" id="shorts-comments">0</div>
                     </button>
                     <button class="action-btn">
                         <div class="action-icon">↗️</div>
@@ -3082,6 +3332,136 @@
         </div>
     </div>
 
+    <!-- BARU: Halaman Kamera Full Screen -->
+    <div class="camera-fullscreen" id="camera-fullscreen" style="display:none;">
+        <div class="camera-fullscreen-header">
+            <button class="back-btn" onclick="closeCameraFullscreen()">←</button>
+            <h2 class="page-title">Kamera</h2>
+            <div class="camera-fullscreen-options">
+                <div class="camera-fullscreen-option" id="flash-option" onclick="toggleFlash()">⚡</div>
+                <div class="camera-fullscreen-option" id="timer-option" onclick="toggleTimer()">⏱️</div>
+                <div class="camera-fullscreen-option" id="grid-option" onclick="toggleGrid()">⬜</div>
+            </div>
+        </div>
+        
+        <div class="camera-fullscreen-preview">
+            <video id="camera-fullscreen-preview" autoplay playsinline></video>
+            <canvas id="camera-fullscreen-canvas" style="display:none;"></canvas>
+            <div id="camera-grid" style="display:none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                <div style="position: absolute; top: 33.33%; left: 0; width: 100%; height: 1px; background: rgba(255,255,255,0.5);"></div>
+                <div style="position: absolute; top: 66.66%; left: 0; width: 100%; height: 1px; background: rgba(255,255,255,0.5);"></div>
+                <div style="position: absolute; left: 33.33%; top: 0; width: 1px; height: 100%; background: rgba(255,255,255,0.5);"></div>
+                <div style="position: absolute; left: 66.66%; top: 0; width: 1px; height: 100%; background: rgba(255,255,255,0.5);"></div>
+            </div>
+            <div id="camera-timer" style="display:none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);"></div>
+        </div>
+        
+        <div class="camera-fullscreen-controls">
+            <div class="camera-fullscreen-buttons">
+                <button class="camera-fullscreen-secondary-btn" onclick="switchCameraFullscreen()">🔄</button>
+                <button class="camera-fullscreen-capture-btn" id="camera-fullscreen-capture-btn" onclick="capturePhotoFullscreen()">
+                    📷
+                </button>
+                <button class="camera-fullscreen-secondary-btn" onclick="openPhotoEditor()">🖼️</button>
+            </div>
+            <div class="camera-fullscreen-options">
+                <div class="camera-fullscreen-option" id="photo-mode" onclick="setCameraMode('photo')" class="active">Foto</div>
+                <div class="camera-fullscreen-option" id="video-mode" onclick="setCameraMode('video')">Video</div>
+                <div class="camera-fullscreen-option" id="portrait-mode" onclick="setCameraMode('portrait')">Portrait</div>
+                <div class="camera-fullscreen-option" id="panorama-mode" onclick="setCameraMode('panorama')">Panorama</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BARU: Halaman Editor Foto -->
+    <div class="photo-editor-page" id="photo-editor-page" style="display:none;">
+        <div class="photo-editor-header">
+            <button class="back-btn" onclick="closePhotoEditor()">←</button>
+            <h2 class="page-title">Edit Foto</h2>
+            <button class="camera-btn" onclick="saveEditedPhoto()">Simpan</button>
+        </div>
+        
+        <div class="photo-editor-content">
+            <div class="photo-editor-preview" id="photo-editor-preview">
+                <img id="photo-editor-image" src="" alt="Foto yang diedit">
+                <!-- Stiker akan ditambahkan di sini secara dinamis -->
+            </div>
+            
+            <div class="photo-editor-controls">
+                <div class="photo-editor-tabs">
+                    <div class="photo-editor-tab active" onclick="switchPhotoEditorTab('filters')">Filter</div>
+                    <div class="photo-editor-tab" onclick="switchPhotoEditorTab('adjust')">Sesuaikan</div>
+                    <div class="photo-editor-tab" onclick="switchPhotoEditorTab('stickers')">Stiker</div>
+                    <div class="photo-editor-tab" onclick="switchPhotoEditorTab('text')">Teks</div>
+                </div>
+                
+                <div class="photo-editor-tab-content active" id="filters-tab">
+                    <div class="photo-editor-filter-options">
+                        <div class="photo-editor-filter-option" onclick="applyPhotoFilter('normal')">Normal</div>
+                        <div class="photo-editor-filter-option" onclick="applyPhotoFilter('clarendon')">Clarendon</div>
+                        <div class="photo-editor-filter-option" onclick="applyPhotoFilter('gingham')">Gingham</div>
+                        <div class="photo-editor-filter-option" onclick="applyPhotoFilter('moon')">Moon</div>
+                        <div class="photo-editor-filter-option" onclick="applyPhotoFilter('lark')">Lark</div>
+                        <div class="photo-editor-filter-option" onclick="applyPhotoFilter('reyes')">Reyes</div>
+                        <div class="photo-editor-filter-option" onclick="applyPhotoFilter('juno')">Juno</div>
+                        <div class="photo-editor-filter-option" onclick="applyPhotoFilter('slumber')">Slumber</div>
+                        <div class="photo-editor-filter-option" onclick="applyPhotoFilter('crema')">Crema</div>
+                    </div>
+                </div>
+                
+                <div class="photo-editor-tab-content" id="adjust-tab">
+                    <div class="photo-editor-adjustment">
+                        <label for="brightness-adjust">Kecerahan</label>
+                        <input type="range" id="brightness-adjust" min="0" max="200" value="100" oninput="adjustPhotoBrightness(this.value)">
+                    </div>
+                    <div class="photo-editor-adjustment">
+                        <label for="contrast-adjust">Kontras</label>
+                        <input type="range" id="contrast-adjust" min="0" max="200" value="100" oninput="adjustPhotoContrast(this.value)">
+                    </div>
+                    <div class="photo-editor-adjustment">
+                        <label for="saturation-adjust">Saturasi</label>
+                        <input type="range" id="saturation-adjust" min="0" max="200" value="100" oninput="adjustPhotoSaturation(this.value)">
+                    </div>
+                    <div class="photo-editor-adjustment">
+                        <label for="warmth-adjust">Kehangatan</label>
+                        <input type="range" id="warmth-adjust" min="0" max="200" value="100" oninput="adjustPhotoWarmth(this.value)">
+                    </div>
+                </div>
+                
+                <div class="photo-editor-tab-content" id="stickers-tab">
+                    <div class="photo-editor-stickers">
+                        <div class="photo-editor-sticker" onclick="addStickerToPhoto('😊')">😊</div>
+                        <div class="photo-editor-sticker" onclick="addStickerToPhoto('😂')">😂</div>
+                        <div class="photo-editor-sticker" onclick="addStickerToPhoto('🥰')">🥰</div>
+                        <div class="photo-editor-sticker" onclick="addStickerToPhoto('😍')">😍</div>
+                        <div class="photo-editor-sticker" onclick="addStickerToPhoto('🤩')">🤩</div>
+                        <div class="photo-editor-sticker" onclick="addStickerToPhoto('😎')">😎</div>
+                        <div class="photo-editor-sticker" onclick="addStickerToPhoto('🥳')">🥳</div>
+                        <div class="photo-editor-sticker" onclick="addStickerToPhoto('😋')">😋</div>
+                        <div class="photo-editor-sticker" onclick="addStickerToPhoto('❤️')">❤️</div>
+                        <div class="photo-editor-sticker" onclick="addStickerToPhoto('🔥')">🔥</div>
+                        <div class="photo-editor-sticker" onclick="addStickerToPhoto('⭐')">⭐</div>
+                        <div class="photo-editor-sticker" onclick="addStickerToPhoto('🎉')">🎉</div>
+                    </div>
+                </div>
+                
+                <div class="photo-editor-tab-content" id="text-tab">
+                    <div class="input-group">
+                        <input type="text" id="photo-text-input" placeholder="Tambah teks ke foto...">
+                        <button class="camera-btn" onclick="addTextToPhoto()">Tambah Teks</button>
+                    </div>
+                    <div class="edit-controls">
+                        <button class="edit-btn" onclick="changeTextColor('#ffffff')">Putih</button>
+                        <button class="edit-btn" onclick="changeTextColor('#000000')">Hitam</button>
+                        <button class="edit-btn" onclick="changeTextColor('#ff0000')">Merah</button>
+                        <button class="edit-btn" onclick="changeTextColor('#00ff00')">Hijau</button>
+                        <button class="edit-btn" onclick="changeTextColor('#0000ff')">Biru</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- BARU: Halaman Profil Pengguna -->
     <div class="user-profile-page" id="user-profile-page" style="display:none;">
         <div class="page-header">
@@ -3108,10 +3488,6 @@
                         <div class="stat-count" id="following-count">0</div>
                         <div class="stat-label">Mengikuti</div>
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-count" id="friends-count">0</div>
-                        <div class="stat-label">Teman</div>
-                    </div>
                 </div>
                 
                 <div class="profile-actions" id="profile-actions">
@@ -3122,7 +3498,6 @@
 
         <div class="profile-tabs">
             <div class="profile-tab active" onclick="switchProfileTab('posts')">Postingan</div>
-            <div class="profile-tab" onclick="switchProfileTab('tagged')">Tersimpan</div>
             <div class="profile-tab" onclick="switchProfileTab('liked')">Disukai</div>
         </div>
 
@@ -3256,30 +3631,14 @@
         const LIKED_POSTS_KEY = 'social_app_liked_posts'; // BARU: Untuk menyimpan postingan yang disukai
         const DEFAULT_PROFILE_IMG = 'https://via.placeholder.com/80/927dfc/ffffff?text=U';
         
-        // Data contoh pengguna untuk fitur pencarian teman
-        const sampleUsers = [
-            { id: 1, name: "Ahmad Rizki", username: "@ahmadrizki", avatar: "https://via.placeholder.com/40/ff6b6b/ffffff?text=AR", online: true, bio: "Content Creator & Traveler", followers: 12500, following: 350 },
-            { id: 2, name: "Sari Dewi", username: "@saridewi", avatar: "https://via.placeholder.com/40/ffe474/000000?text=SD", online: false, bio: "Beauty & Lifestyle", followers: 8900, following: 210 },
-            { id: 3, name: "Budi Santoso", username: "@budisantoso", avatar: "https://via.placeholder.com/40/74ff98/000000?text=BS", online: true, bio: "Gamer & Streamer", followers: 15600, following: 420 },
-            { id: 4, name: "Maya Sari", username: "@mayasari", avatar: "https://via.placeholder.com/40/74d3ff/000000?text=MS", online: true, bio: "Food & Travel Vlogger", followers: 21000, following: 580 },
-            { id: 5, name: "Rizky Pratama", username: "@rizkypratama", avatar: "https://via.placeholder.com/40/ff74d9/000000?text=RP", online: false, bio: "Tech Reviewer", followers: 17800, following: 320 }
-        ];
+        // Data contoh pengguna untuk fitur pencarian teman - DIHAPUS
+        const sampleUsers = [];
         
-        // Data contoh untuk konten video
-        const sampleVideos = [
-            { id: 1, title: "Review Smartphone Terbaru 2023", user: "Rizky Pratama", username: "@rizkypratama", avatar: "https://via.placeholder.com/40/ff74d9/000000?text=RP", thumbnail: "https://via.placeholder.com/150/ff74d9/ffffff?text=Tech", views: "125K", likes: "8.2K", duration: "12:45" },
-            { id: 2, title: "Tutorial Makeup Natural untuk Pemula", user: "Sari Dewi", username: "@saridewi", avatar: "https://via.placeholder.com/40/ffe474/000000?text=SD", thumbnail: "https://via.placeholder.com/150/ffe474/000000?text=Beauty", views: "89K", likes: "5.7K", duration: "8:32" },
-            { id: 3, title: "Gameplay Mobile Legends Epic Comeback", user: "Budi Santoso", username: "@budisantoso", avatar: "https://via.placeholder.com/40/74ff98/000000?text=BS", thumbnail: "https://via.placeholder.com/150/74ff98/000000?text=Gaming", views: "156K", likes: "12.3K", duration: "15:20" },
-            { id: 4, title: "Mukbang Makanan Pedas Level 10", user: "Maya Sari", username: "@mayasari", avatar: "https://via.placeholder.com/40/74d3ff/000000?text=MS", thumbnail: "https://via.placeholder.com/150/74d3ff/ffffff?text=Food", views: "210K", likes: "15.8K", duration: "22:15" },
-            { id: 5, title: "Vlog Liburan ke Bali Part 1", user: "Ahmad Rizki", username: "@ahmadrizki", avatar: "https://via.placeholder.com/40/ff6b6b/ffffff?text=AR", thumbnail: "https://via.placeholder.com/150/ff6b6b/ffffff?text=Travel", views: "178K", likes: "11.2K", duration: "18:40" }
-        ];
+        // Data contoh untuk konten video - DIHAPUS
+        const sampleVideos = [];
         
-        // Data contoh untuk live streaming
-        const sampleLiveStreams = [
-            { id: 1, title: "LIVE: Q&A Seputar Teknologi", user: "Rizky Pratama", username: "@rizkypratama", avatar: "https://via.placeholder.com/40/ff74d9/000000?text=RP", thumbnail: "https://via.placeholder.com/150/ff74d9/ffffff?text=LIVE", viewers: "1.2K", category: "Teknologi" },
-            { id: 2, title: "LIVE: Tutorial Makeup Hari Ini", user: "Sari Dewi", username: "@saridewi", avatar: "https://via.placeholder.com/40/ffe474/000000?text=SD", thumbnail: "https://via.placeholder.com/150/ffe474/000000?text=LIVE", viewers: "890", category: "Beauty" },
-            { id: 3, title: "LIVE: Ranked Game Mobile Legends", user: "Budi Santoso", username: "@budisantoso", avatar: "https://via.placeholder.com/40/74ff98/000000?text=BS", thumbnail: "https://via.placeholder.com/150/74ff98/000000?text=LIVE", viewers: "2.5K", category: "Gaming" }
-        ];
+        // Data contoh untuk live streaming - DIHAPUS
+        const sampleLiveStreams = [];
         
         // Coba muat data pengguna dari localStorage saat startup
         let currentUser = loadUserData(); 
@@ -3299,86 +3658,7 @@
         let postViews = loadPostViews(); // BARU: Load data view per post per user
         let likedPosts = loadLikedPosts(); // BARU: Load postingan yang disukai
 
-        // BARU: Fungsi untuk memuat data permintaan pertemanan
-        function loadFriendRequests() {
-            const storedRequests = localStorage.getItem(FRIEND_REQUESTS_KEY);
-            return storedRequests ? JSON.parse(storedRequests) : {};
-        }
-
-        // BARU: Fungsi untuk menyimpan data permintaan pertemanan
-        function saveFriendRequests() {
-            localStorage.setItem(FRIEND_REQUESTS_KEY, JSON.stringify(friendRequests));
-        }
-
-        // BARU: Fungsi untuk memuat data view per post per user
-        function loadPostViews() {
-            const storedViews = localStorage.getItem(POST_VIEWS_KEY);
-            return storedViews ? JSON.parse(storedViews) : {};
-        }
-
-        // BARU: Fungsi untuk menyimpan data view per post per user
-        function savePostViews() {
-            localStorage.setItem(POST_VIEWS_KEY, JSON.stringify(postViews));
-        }
-
-        // BARU: Fungsi untuk memuat postingan yang disukai
-        function loadLikedPosts() {
-            const storedLikedPosts = localStorage.getItem(LIKED_POSTS_KEY);
-            return storedLikedPosts ? JSON.parse(storedLikedPosts) : {};
-        }
-
-        // BARU: Fungsi untuk menyimpan postingan yang disukai
-        function saveLikedPosts() {
-            localStorage.setItem(LIKED_POSTS_KEY, JSON.stringify(likedPosts));
-        }
-
-        // BARU: Fungsi untuk memuat data followers
-        function loadFollowers() {
-            const storedFollowers = localStorage.getItem(FOLLOWERS_STORAGE_KEY);
-            return storedFollowers ? JSON.parse(storedFollowers) : {};
-        }
-
-        // BARU: Fungsi untuk menyimpan data followers
-        function saveFollowers() {
-            localStorage.setItem(FOLLOWERS_STORAGE_KEY, JSON.stringify(followers));
-        }
-
-        // BARU: Fungsi untuk memuat riwayat pencarian
-        function loadSearchHistory() {
-            const storedHistory = localStorage.getItem(SEARCH_HISTORY_KEY);
-            return storedHistory ? JSON.parse(storedHistory) : [];
-        }
-
-        // BARU: Fungsi untuk menyimpan riwayat pencarian
-        function saveSearchHistory() {
-            localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(searchHistory));
-        }
-
-        // BARU: Fungsi untuk menambahkan pencarian ke riwayat
-        function addToSearchHistory(query) {
-            // Hapus query jika sudah ada
-            searchHistory = searchHistory.filter(item => item !== query);
-            // Tambahkan ke awal array
-            searchHistory.unshift(query);
-            // Batasi riwayat hingga 10 item
-            if (searchHistory.length > 10) {
-                searchHistory = searchHistory.slice(0, 10);
-            }
-            saveSearchHistory();
-        }
-
-        // BARU: Fungsi untuk memuat daftar teman
-        function loadFriends() {
-            const storedFriends = localStorage.getItem(FRIENDS_STORAGE_KEY);
-            return storedFriends ? JSON.parse(storedFriends) : [];
-        }
-
-        // BARU: Fungsi untuk menyimpan daftar teman
-        function saveFriends() {
-            localStorage.setItem(FRIENDS_STORAGE_KEY, JSON.stringify(friends));
-        }
-
-        // BARU: Variabel untuk fitur upload
+        // BARU: Variabel untuk fitur kamera dan editor foto
         let currentMediaType = ''; // 'photo', 'video', 'text'
         let mediaStream = null;
         let mediaRecorder = null;
@@ -3411,6 +3691,25 @@
 
         // BARU: Variabel untuk status koneksi
         let isOnline = true;
+
+        // BARU: Variabel untuk kamera fullscreen
+        let cameraFullscreenStream = null;
+        let cameraFullscreenMode = 'photo';
+        let cameraFlashEnabled = false;
+        let cameraTimerEnabled = false;
+        let cameraGridEnabled = false;
+        let cameraTimerInterval = null;
+
+        // BARU: Variabel untuk editor foto
+        let photoEditorImage = null;
+        let photoEditorStickers = [];
+        let photoEditorTexts = [];
+        let currentTextColor = '#ffffff';
+        let currentPhotoFilter = 'normal';
+        let currentPhotoBrightness = 100;
+        let currentPhotoContrast = 100;
+        let currentPhotoSaturation = 100;
+        let currentPhotoWarmth = 100;
 
         // Fungsi untuk memuat data pengguna dari localStorage
         function loadUserData() {
@@ -3496,6 +3795,85 @@
             localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(appSettings));
         }
 
+        // BARU: Fungsi untuk memuat data permintaan pertemanan
+        function loadFriendRequests() {
+            const storedRequests = localStorage.getItem(FRIEND_REQUESTS_KEY);
+            return storedRequests ? JSON.parse(storedRequests) : {};
+        }
+
+        // BARU: Fungsi untuk menyimpan data permintaan pertemanan
+        function saveFriendRequests() {
+            localStorage.setItem(FRIEND_REQUESTS_KEY, JSON.stringify(friendRequests));
+        }
+
+        // BARU: Fungsi untuk memuat data view per post per user
+        function loadPostViews() {
+            const storedViews = localStorage.getItem(POST_VIEWS_KEY);
+            return storedViews ? JSON.parse(storedViews) : {};
+        }
+
+        // BARU: Fungsi untuk menyimpan data view per post per user
+        function savePostViews() {
+            localStorage.setItem(POST_VIEWS_KEY, JSON.stringify(postViews));
+        }
+
+        // BARU: Fungsi untuk memuat postingan yang disukai
+        function loadLikedPosts() {
+            const storedLikedPosts = localStorage.getItem(LIKED_POSTS_KEY);
+            return storedLikedPosts ? JSON.parse(storedLikedPosts) : {};
+        }
+
+        // BARU: Fungsi untuk menyimpan postingan yang disukai
+        function saveLikedPosts() {
+            localStorage.setItem(LIKED_POSTS_KEY, JSON.stringify(likedPosts));
+        }
+
+        // BARU: Fungsi untuk memuat data followers
+        function loadFollowers() {
+            const storedFollowers = localStorage.getItem(FOLLOWERS_STORAGE_KEY);
+            return storedFollowers ? JSON.parse(storedFollowers) : {};
+        }
+
+        // BARU: Fungsi untuk menyimpan data followers
+        function saveFollowers() {
+            localStorage.setItem(FOLLOWERS_STORAGE_KEY, JSON.stringify(followers));
+        }
+
+        // BARU: Fungsi untuk memuat riwayat pencarian
+        function loadSearchHistory() {
+            const storedHistory = localStorage.getItem(SEARCH_HISTORY_KEY);
+            return storedHistory ? JSON.parse(storedHistory) : [];
+        }
+
+        // BARU: Fungsi untuk menyimpan riwayat pencarian
+        function saveSearchHistory() {
+            localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(searchHistory));
+        }
+
+        // BARU: Fungsi untuk menambahkan pencarian ke riwayat
+        function addToSearchHistory(query) {
+            // Hapus query jika sudah ada
+            searchHistory = searchHistory.filter(item => item !== query);
+            // Tambahkan ke awal array
+            searchHistory.unshift(query);
+            // Batasi riwayat hingga 10 item
+            if (searchHistory.length > 10) {
+                searchHistory = searchHistory.slice(0, 10);
+            }
+            saveSearchHistory();
+        }
+
+        // BARU: Fungsi untuk memuat daftar teman
+        function loadFriends() {
+            const storedFriends = localStorage.getItem(FRIENDS_STORAGE_KEY);
+            return storedFriends ? JSON.parse(storedFriends) : [];
+        }
+
+        // BARU: Fungsi untuk menyimpan daftar teman
+        function saveFriends() {
+            localStorage.setItem(FRIENDS_STORAGE_KEY, JSON.stringify(friends));
+        }
+
         // BARU: Fungsi untuk menyembunyikan semua layar
         function hideAllScreens() {
             document.getElementById('welcome-screen').style.display = 'none';
@@ -3513,6 +3891,8 @@
             document.getElementById('chat-page').style.display = 'none';
             document.getElementById('search-page').style.display = 'none';
             document.getElementById('error-screen').style.display = 'none';
+            document.getElementById('camera-fullscreen').style.display = 'none';
+            document.getElementById('photo-editor-page').style.display = 'none';
             
             // Atur ulang centering body untuk auth screens
             document.body.style.display = 'flex';
@@ -3683,7 +4063,7 @@
             document.getElementById('user-profile-page').style.display = 'block';
             
             // Cari data user berdasarkan ID
-            const user = sampleUsers.find(u => u.id === userId) || allUsers.find(u => u.id === userId);
+            const user = allUsers.find(u => u.id === userId);
             if (user) {
                 currentProfileUser = user;
                 updateProfilePage();
@@ -3698,7 +4078,7 @@
             if (!currentProfileUser) return;
             
             document.getElementById('user-profile-page-name').textContent = currentProfileUser.name;
-            document.getElementById('user-profile-page-pic').src = currentProfileUser.avatar || currentProfileUser.img || DEFAULT_PROFILE_IMG;
+            document.getElementById('user-profile-page-pic').src = currentProfileUser.img || DEFAULT_PROFILE_IMG;
             document.getElementById('user-profile-page-username').textContent = '@' + (currentProfileUser.username || currentProfileUser.name.toLowerCase().replace(/\s+/g, ''));
             
             // Hitung statistik
@@ -3713,12 +4093,6 @@
             
             document.getElementById('followers-count').textContent = userFollowers.length;
             document.getElementById('following-count').textContent = userFollowing.length;
-            
-            // BARU: Hitung jumlah teman
-            const userFriends = friends.filter(friend => 
-                friend.email === currentProfileUser.email || friend.id === currentProfileUser.id
-            );
-            document.getElementById('friends-count').textContent = userFriends.length;
             
             // PERUBAHAN: Update tombol berdasarkan apakah ini profil sendiri atau profil orang lain
             updateProfileActions();
@@ -3828,9 +4202,6 @@
                 // BARU: Tampilkan postingan yang disukai
                 const likedPostIds = likedPosts[currentUser.email] || [];
                 userPosts = posts.filter(post => likedPostIds.includes(post.id));
-            } else if (currentProfileTab === 'tagged') {
-                // Tampilkan postingan tersimpan (placeholder)
-                userPosts = [];
             }
             
             if (userPosts.length === 0) {
@@ -3839,8 +4210,6 @@
                     message = 'Belum ada postingan';
                 } else if (currentProfileTab === 'liked') {
                     message = 'Belum ada postingan yang disukai';
-                } else if (currentProfileTab === 'tagged') {
-                    message = 'Belum ada postingan yang disimpan';
                 }
                 
                 postsContainer.innerHTML = `
@@ -3921,7 +4290,7 @@
             
             // Update header chat
             document.getElementById('chat-profile-name').textContent = currentChatUser.name;
-            document.getElementById('chat-profile-pic').src = currentChatUser.avatar || currentChatUser.img || DEFAULT_PROFILE_IMG;
+            document.getElementById('chat-profile-pic').src = currentChatUser.img || DEFAULT_PROFILE_IMG;
             document.getElementById('chat-status').textContent = 'Online';
             
             // Tampilkan pesan
@@ -5352,13 +5721,63 @@
             // Update navigasi bawah
             updateBottomNav('shorts');
             
-            // Auto play video pertama
-            setTimeout(() => {
-                const firstVideo = document.querySelector('.short-video video');
-                if (firstVideo) {
-                    firstVideo.play();
+            // Tampilkan video pendek dari postingan
+            displayShorts();
+        }
+
+        // BARU: Fungsi untuk menampilkan video shorts
+        function displayShorts() {
+            const shortsContent = document.getElementById('shorts-content');
+            const allPosts = posts; // Gunakan semua postingan untuk shorts
+            
+            if (allPosts.length === 0) {
+                shortsContent.innerHTML = `
+                    <div class="no-posts-message">
+                        <p>Belum ada konten. Buat konten pertama Anda!</p>
+                        <button class="camera-btn" onclick="showUploadPage()" style="margin-top: 15px;">Buat Konten</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            let shortsHTML = '';
+            
+            allPosts.forEach(post => {
+                let mediaHTML = '';
+                if (post.type === 'photo') {
+                    mediaHTML = `<img src="${post.media}" alt="${post.description || 'Foto'}">`;
+                } else if (post.type === 'video') {
+                    mediaHTML = `<video src="${post.media}" controls autoplay muted loop></video>`;
+                } else if (post.type === 'text') {
+                    mediaHTML = `<div class="short-text-content">${post.description || post.media}</div>`;
                 }
-            }, 500);
+                
+                shortsHTML += `
+                    <div class="short-video">
+                        ${mediaHTML}
+                        <div class="video-info">
+                            <h3>${post.userName}</h3>
+                            <p>${post.description || 'Konten menarik'}</p>
+                        </div>
+                        <div class="video-actions">
+                            <button class="action-btn" onclick="toggleLike(${post.id})">
+                                <div class="action-icon">${post.liked ? '❤️' : '🤍'}</div>
+                                <div class="action-count">${post.likes}</div>
+                            </button>
+                            <button class="action-btn" onclick="toggleComments(${post.id})">
+                                <div class="action-icon">💬</div>
+                                <div class="action-count">${post.comments.length}</div>
+                            </button>
+                            <button class="action-btn" onclick="sharePost(${post.id})">
+                                <div class="action-icon">↗️</div>
+                                <div class="action-count">Share</div>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            shortsContent.innerHTML = shortsHTML;
         }
 
         // PERUBAHAN: Fungsi untuk update navigasi bawah
@@ -5503,31 +5922,19 @@
                 return;
             }
             
-            // Gabungkan sampleUsers dan allUsers untuk pencarian
-            const allAvailableUsers = [...sampleUsers, ...allUsers.filter(user => 
-                user.email !== currentUser.email && !friends.some(friend => friend.id === user.id || friend.email === user.email)
-            )];
-            
-            const filteredUsers = allAvailableUsers.filter(user => 
-                user.name.toLowerCase().includes(searchTerm) || 
-                (user.username && user.username.toLowerCase().includes(searchTerm)) ||
-                (user.email && user.email.toLowerCase().includes(searchTerm))
+            // Cari di semua pengguna
+            const filteredUsers = allUsers.filter(user => 
+                user.name && user.name.toLowerCase().includes(searchTerm) && 
+                user.email !== currentUser.email
             );
             
-            // Hapus duplikat berdasarkan ID atau email
-            const uniqueUsers = filteredUsers.filter((user, index, self) => 
-                index === self.findIndex(u => 
-                    (u.id && u.id === user.id) || (u.email && u.email === user.email)
-                )
-            );
-            
-            if (uniqueUsers.length === 0) {
+            if (filteredUsers.length === 0) {
                 searchResults.innerHTML = '<p style="text-align: center; color: #a0a0a0; font-size: 14px; padding: 10px;">Tidak ada hasil ditemukan</p>';
                 return;
             }
             
             let resultsHTML = '';
-            uniqueUsers.forEach(user => {
+            filteredUsers.forEach(user => {
                 // Cek apakah user sudah menjadi teman
                 const isAlreadyFriend = friends.some(friend => 
                     friend.id === user.id || friend.email === user.email
@@ -5540,13 +5947,13 @@
                 resultsHTML += `
                     <div class="friend-result-item">
                         <div class="friend-info">
-                            <img src="${user.avatar || user.img || DEFAULT_PROFILE_IMG}" alt="${user.name}" class="friend-avatar">
+                            <img src="${user.img || DEFAULT_PROFILE_IMG}" alt="${user.name}" class="friend-avatar">
                             <div class="friend-details">
                                 <div class="friend-name">${user.name}</div>
-                                <div class="friend-username">${user.username || user.email || ''}</div>
+                                <div class="friend-username">${user.email || ''}</div>
                             </div>
                         </div>
-                        <div class="add-friend-icon" onclick="addFriend(${user.id || 'null'}, '${user.email || ''}')" style="${isAlreadyFriend ? 'background: #4CAF50;' : hasPendingRequest ? 'background: #FFA500;' : ''}">
+                        <div class="add-friend-icon" onclick="addFriend('${user.email}')" style="${isAlreadyFriend ? 'background: #4CAF50;' : hasPendingRequest ? 'background: #FFA500;' : ''}">
                             ${isAlreadyFriend ? '✓' : hasPendingRequest ? '⏳' : '+'}
                         </div>
                     </div>
@@ -5557,14 +5964,9 @@
         }
 
         // PERUBAHAN: Fungsi untuk menambahkan teman
-        function addFriend(userId, userEmail) {
-            // Cari user berdasarkan ID atau email
-            let user;
-            if (userId && userId !== 'null') {
-                user = sampleUsers.find(u => u.id === userId) || allUsers.find(u => u.id === userId);
-            } else if (userEmail) {
-                user = allUsers.find(u => u.email === userEmail);
-            }
+        function addFriend(userEmail) {
+            // Cari user berdasarkan email
+            const user = allUsers.find(u => u.email === userEmail);
             
             if (!user) {
                 alert('Pengguna tidak ditemukan!');
@@ -5591,20 +5993,19 @@
             }
             
             // Kirim permintaan pertemanan
-            if (!friendRequests[user.email || user.id]) {
-                friendRequests[user.email || user.id] = [];
+            if (!friendRequests[user.email]) {
+                friendRequests[user.email] = [];
             }
             
             const newRequest = {
                 id: currentUser.id || Date.now(),
                 name: currentUser.name,
-                username: currentUser.username,
                 email: currentUser.email,
                 avatar: currentUser.img || DEFAULT_PROFILE_IMG,
                 timestamp: new Date().toISOString()
             };
             
-            friendRequests[user.email || user.id].push(newRequest);
+            friendRequests[user.email].push(newRequest);
             saveFriendRequests();
             
             // Refresh tampilan pencarian
@@ -5627,7 +6028,7 @@
             friends.forEach(friend => {
                 friendsHTML += `
                     <div class="friend-item">
-                        <img src="${friend.avatar}" alt="${friend.name}" class="friend-avatar">
+                        <img src="${friend.avatar || DEFAULT_PROFILE_IMG}" alt="${friend.name}" class="friend-avatar">
                         <div class="friend-details">
                             <div class="friend-name">${friend.name}</div>
                             <div class="friend-status">
@@ -5661,14 +6062,14 @@
             userRequests.forEach(request => {
                 requestsHTML += `
                     <div class="friend-request-item">
-                        <img src="${request.avatar}" alt="${request.name}" class="friend-avatar">
+                        <img src="${request.avatar || DEFAULT_PROFILE_IMG}" alt="${request.name}" class="friend-avatar">
                         <div class="friend-details">
                             <div class="friend-name">${request.name}</div>
-                            <div class="friend-username">${request.username || request.email || ''}</div>
+                            <div class="friend-username">${request.email || ''}</div>
                         </div>
                         <div class="friend-request-actions">
-                            <div class="friend-request-btn accept-btn" onclick="acceptFriendRequest('${request.email || request.id}')">+</div>
-                            <div class="friend-request-btn decline-btn" onclick="declineFriendRequest('${request.email || request.id}')">-</div>
+                            <div class="friend-request-btn accept-btn" onclick="acceptFriendRequest('${request.email}')">+</div>
+                            <div class="friend-request-btn decline-btn" onclick="declineFriendRequest('${request.email}')">-</div>
                         </div>
                     </div>
                 `;
@@ -5681,7 +6082,7 @@
         function acceptFriendRequest(requestEmail) {
             // Cari permintaan
             const userRequests = friendRequests[currentUser.email] || [];
-            const requestIndex = userRequests.findIndex(req => req.email === requestEmail || req.id === requestEmail);
+            const requestIndex = userRequests.findIndex(req => req.email === requestEmail);
             
             if (requestIndex === -1) {
                 alert('Permintaan tidak ditemukan!');
@@ -5694,7 +6095,6 @@
             const newFriend = {
                 id: request.id || Date.now(),
                 name: request.name,
-                username: request.username,
                 email: request.email,
                 avatar: request.avatar,
                 online: Math.random() > 0.5, // Random status online/offline
@@ -5720,7 +6120,7 @@
         function declineFriendRequest(requestEmail) {
             // Cari permintaan
             const userRequests = friendRequests[currentUser.email] || [];
-            const requestIndex = userRequests.findIndex(req => req.email === requestEmail || req.id === requestEmail);
+            const requestIndex = userRequests.findIndex(req => req.email === requestEmail);
             
             if (requestIndex === -1) {
                 alert('Permintaan tidak ditemukan!');
@@ -5807,41 +6207,24 @@
             
             if (currentSearchTab === 'all' || currentSearchTab === 'accounts') {
                 // Cari akun
-                const accountResults = sampleUsers.filter(user => 
-                    user.name.toLowerCase().includes(searchTerm) || 
-                    user.username.toLowerCase().includes(searchTerm) ||
-                    user.bio.toLowerCase().includes(searchTerm)
-                );
-                
-                // Tambahkan akun dari allUsers
-                const allUserResults = allUsers.filter(user => 
+                const accountResults = allUsers.filter(user => 
                     user.name && user.name.toLowerCase().includes(searchTerm) && 
                     user.email !== currentUser.email
                 );
                 
-                const combinedAccountResults = [...accountResults, ...allUserResults];
-                
-                // Hapus duplikat
-                const uniqueAccountResults = combinedAccountResults.filter((user, index, self) => 
-                    index === self.findIndex(u => 
-                        (u.id && u.id === user.id) || (u.email && u.email === user.email)
-                    )
-                );
-                
-                if (uniqueAccountResults.length > 0) {
+                if (accountResults.length > 0) {
                     resultsHTML += `
                         <div class="search-section">
                             <div class="search-section-title">Akun</div>
                     `;
                     
-                    uniqueAccountResults.forEach(user => {
+                    accountResults.forEach(user => {
                         resultsHTML += `
-                            <div class="user-result-item" onclick="showOtherUserProfile(${user.id || 'null'})">
-                                <img src="${user.avatar || user.img || DEFAULT_PROFILE_IMG}" alt="${user.name}" class="user-result-avatar">
+                            <div class="user-result-item" onclick="showOtherUserProfile('${user.id}')">
+                                <img src="${user.img || DEFAULT_PROFILE_IMG}" alt="${user.name}" class="user-result-avatar">
                                 <div class="user-result-info">
                                     <div class="user-result-name">${user.name}</div>
-                                    <div class="user-result-username">${user.username || user.email || ''}</div>
-                                    <div class="user-result-bio">${user.bio || ''}</div>
+                                    <div class="user-result-username">${user.email || ''}</div>
                                 </div>
                                 <button class="user-result-follow-btn">Follow</button>
                             </div>
@@ -5887,42 +6270,6 @@
                                         <span>${video.views} views</span>
                                         <span>${video.likes} likes</span>
                                     </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    resultsHTML += `
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-            
-            if (currentSearchTab === 'all' || currentSearchTab === 'live') {
-                // Cari live streaming
-                const liveResults = sampleLiveStreams.filter(live => 
-                    live.title.toLowerCase().includes(searchTerm) || 
-                    live.user.toLowerCase().includes(searchTerm) ||
-                    live.category.toLowerCase().includes(searchTerm)
-                );
-                
-                if (liveResults.length > 0) {
-                    resultsHTML += `
-                        <div class="search-section">
-                            <div class="search-section-title">Live</div>
-                            <div class="search-results-grid">
-                    `;
-                    
-                    liveResults.forEach(live => {
-                        resultsHTML += `
-                            <div class="live-result-item" onclick="watchLive(${live.id})">
-                                <img src="${live.thumbnail}" alt="${live.title}" class="search-result-media">
-                                <div class="live-badge">LIVE</div>
-                                <div class="live-viewers">${live.viewers} viewers</div>
-                                <div class="live-info">
-                                    <div class="live-title">${live.title}</div>
-                                    <div class="live-user">${live.user}</div>
                                 </div>
                             </div>
                         `;
@@ -5986,12 +6333,6 @@
         function playVideo(videoId) {
             alert(`Memutar video dengan ID: ${videoId}`);
             // Di sini bisa ditambahkan logika untuk memutar video
-        }
-
-        // BARU: Fungsi untuk menonton live streaming
-        function watchLive(liveId) {
-            alert(`Menonton live streaming dengan ID: ${liveId}`);
-            // Di sini bisa ditambahkan logika untuk menonton live streaming
         }
 
         // BARU: Event listener untuk input pencarian
@@ -6124,6 +6465,547 @@
             searchHistory = [];
             saveSearchHistory();
             document.getElementById('search-suggestions').classList.remove('active');
+        }
+
+        // BARU: Fungsi untuk membuka kamera fullscreen
+        function openCameraFullscreen() {
+            hideAllScreens();
+            document.getElementById('camera-fullscreen').style.display = 'flex';
+            
+            // Mulai kamera
+            startCameraFullscreen();
+        }
+
+        // BARU: Fungsi untuk menutup kamera fullscreen
+        function closeCameraFullscreen() {
+            // Hentikan kamera
+            stopCameraFullscreen();
+            
+            // Kembali ke halaman upload
+            showUploadPage();
+        }
+
+        // BARU: Fungsi untuk memulai kamera fullscreen
+        async function startCameraFullscreen() {
+            try {
+                const constraints = {
+                    video: {
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        facingMode: 'user'
+                    },
+                    audio: false
+                };
+                
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    cameraFullscreenStream = await navigator.mediaDevices.getUserMedia(constraints);
+                    const videoElement = document.getElementById('camera-fullscreen-preview');
+                    videoElement.srcObject = cameraFullscreenStream;
+                } else {
+                    alert('Browser Anda tidak mendukung akses kamera. Silakan gunakan browser yang lebih baru.');
+                }
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                alert('Tidak dapat mengakses kamera. Pastikan Anda memberikan izin akses kamera.');
+            }
+        }
+
+        // BARU: Fungsi untuk menghentikan kamera fullscreen
+        function stopCameraFullscreen() {
+            if (cameraFullscreenStream) {
+                cameraFullscreenStream.getTracks().forEach(track => track.stop());
+                cameraFullscreenStream = null;
+            }
+            
+            // Hentikan timer jika aktif
+            if (cameraTimerInterval) {
+                clearInterval(cameraTimerInterval);
+                cameraTimerInterval = null;
+            }
+        }
+
+        // BARU: Fungsi untuk mengganti kamera di fullscreen
+        async function switchCameraFullscreen() {
+            if (!cameraFullscreenStream) return;
+            
+            // Hentikan stream saat ini
+            cameraFullscreenStream.getTracks().forEach(track => track.stop());
+            
+            try {
+                // Dapatkan semua perangkat media
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                
+                if (videoDevices.length < 2) {
+                    alert('Hanya satu kamera yang tersedia');
+                    return;
+                }
+                
+                // Tentukan kendala untuk kamera yang berbeda
+                const currentTrack = cameraFullscreenStream.getVideoTracks()[0];
+                const currentFacingMode = currentTrack.getSettings().facingMode;
+                const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+                
+                const constraints = {
+                    video: {
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        facingMode: newFacingMode
+                    },
+                    audio: false
+                };
+                
+                cameraFullscreenStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const videoElement = document.getElementById('camera-fullscreen-preview');
+                videoElement.srcObject = cameraFullscreenStream;
+            } catch (error) {
+                console.error('Error switching camera:', error);
+                alert('Tidak dapat mengganti kamera.');
+            }
+        }
+
+        // BARU: Fungsi untuk mengambil foto di fullscreen
+        function capturePhotoFullscreen() {
+            if (cameraTimerEnabled) {
+                // Jika timer aktif, mulai hitung mundur
+                startTimerCountdown();
+                return;
+            }
+            
+            // Ambil foto langsung
+            takePhoto();
+        }
+
+        // BARU: Fungsi untuk mengambil foto
+        function takePhoto() {
+            const video = document.getElementById('camera-fullscreen-preview');
+            const canvas = document.getElementById('camera-fullscreen-canvas');
+            const context = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            currentMedia = canvas.toDataURL('image/png');
+            originalMedia = currentMedia; // Simpan media asli
+            
+            // Buka editor foto
+            openPhotoEditor();
+        }
+
+        // BARU: Fungsi untuk memulai hitung mundur timer
+        function startTimerCountdown() {
+            let countdown = 3;
+            const timerElement = document.getElementById('camera-timer');
+            
+            timerElement.textContent = countdown;
+            timerElement.style.display = 'block';
+            
+            cameraTimerInterval = setInterval(() => {
+                countdown--;
+                timerElement.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(cameraTimerInterval);
+                    timerElement.style.display = 'none';
+                    takePhoto();
+                }
+            }, 1000);
+        }
+
+        // BARU: Fungsi untuk toggle flash
+        function toggleFlash() {
+            cameraFlashEnabled = !cameraFlashEnabled;
+            const flashOption = document.getElementById('flash-option');
+            
+            if (cameraFlashEnabled) {
+                flashOption.style.background = 'var(--accent-purple)';
+                flashOption.style.color = 'white';
+                // Di sini bisa ditambahkan logika untuk mengaktifkan flash (jika didukung)
+            } else {
+                flashOption.style.background = 'rgba(255, 255, 255, 0.2)';
+                flashOption.style.color = 'white';
+            }
+        }
+
+        // BARU: Fungsi untuk toggle timer
+        function toggleTimer() {
+            cameraTimerEnabled = !cameraTimerEnabled;
+            const timerOption = document.getElementById('timer-option');
+            
+            if (cameraTimerEnabled) {
+                timerOption.style.background = 'var(--accent-purple)';
+                timerOption.style.color = 'white';
+            } else {
+                timerOption.style.background = 'rgba(255, 255, 255, 0.2)';
+                timerOption.style.color = 'white';
+                
+                // Hentikan timer jika sedang berjalan
+                if (cameraTimerInterval) {
+                    clearInterval(cameraTimerInterval);
+                    document.getElementById('camera-timer').style.display = 'none';
+                }
+            }
+        }
+
+        // BARU: Fungsi untuk toggle grid
+        function toggleGrid() {
+            cameraGridEnabled = !cameraGridEnabled;
+            const gridOption = document.getElementById('grid-option');
+            const gridElement = document.getElementById('camera-grid');
+            
+            if (cameraGridEnabled) {
+                gridOption.style.background = 'var(--accent-purple)';
+                gridOption.style.color = 'white';
+                gridElement.style.display = 'block';
+            } else {
+                gridOption.style.background = 'rgba(255, 255, 255, 0.2)';
+                gridOption.style.color = 'white';
+                gridElement.style.display = 'none';
+            }
+        }
+
+        // BARU: Fungsi untuk mengatur mode kamera
+        function setCameraMode(mode) {
+            cameraFullscreenMode = mode;
+            
+            // Update tampilan tombol mode
+            const modes = ['photo-mode', 'video-mode', 'portrait-mode', 'panorama-mode'];
+            modes.forEach(modeId => {
+                const element = document.getElementById(modeId);
+                if (modeId === mode + '-mode') {
+                    element.classList.add('active');
+                } else {
+                    element.classList.remove('active');
+                }
+            });
+            
+            // Update tombol capture
+            const captureBtn = document.getElementById('camera-fullscreen-capture-btn');
+            if (mode === 'photo') {
+                captureBtn.innerHTML = '📷';
+            } else if (mode === 'video') {
+                captureBtn.innerHTML = '🎥';
+            } else if (mode === 'portrait') {
+                captureBtn.innerHTML = '👤';
+            } else if (mode === 'panorama') {
+                captureBtn.innerHTML = '🌅';
+            }
+        }
+
+        // BARU: Fungsi untuk membuka editor foto
+        function openPhotoEditor() {
+            hideAllScreens();
+            document.getElementById('photo-editor-page').style.display = 'flex';
+            
+            // Set gambar yang akan diedit
+            photoEditorImage = currentMedia;
+            document.getElementById('photo-editor-image').src = photoEditorImage;
+            
+            // Reset semua pengaturan editor
+            resetPhotoEditor();
+        }
+
+        // BARU: Fungsi untuk menutup editor foto
+        function closePhotoEditor() {
+            // Kembali ke kamera fullscreen
+            openCameraFullscreen();
+        }
+
+        // BARU: Fungsi untuk reset pengaturan editor foto
+        function resetPhotoEditor() {
+            photoEditorStickers = [];
+            photoEditorTexts = [];
+            currentTextColor = '#ffffff';
+            currentPhotoFilter = 'normal';
+            currentPhotoBrightness = 100;
+            currentPhotoContrast = 100;
+            currentPhotoSaturation = 100;
+            currentPhotoWarmth = 100;
+            
+            // Reset slider values
+            document.getElementById('brightness-adjust').value = 100;
+            document.getElementById('contrast-adjust').value = 100;
+            document.getElementById('saturation-adjust').value = 100;
+            document.getElementById('warmth-adjust').value = 100;
+            
+            // Hapus semua stiker dan teks dari preview
+            const preview = document.getElementById('photo-editor-preview');
+            const stickers = preview.querySelectorAll('.photo-editor-sticker-preview');
+            stickers.forEach(sticker => sticker.remove());
+        }
+
+        // BARU: Fungsi untuk mengganti tab di editor foto
+        function switchPhotoEditorTab(tab) {
+            // Sembunyikan semua tab
+            const tabs = document.querySelectorAll('.photo-editor-tab-content');
+            tabs.forEach(tabElement => {
+                tabElement.classList.remove('active');
+            });
+            
+            // Tampilkan tab yang dipilih
+            document.getElementById(tab + '-tab').classList.add('active');
+            
+            // Update tampilan tab
+            const tabButtons = document.querySelectorAll('.photo-editor-tab');
+            tabButtons.forEach(tabButton => {
+                tabButton.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+        }
+
+        // BARU: Fungsi untuk menerapkan filter pada foto
+        function applyPhotoFilter(filter) {
+            currentPhotoFilter = filter;
+            updatePhotoAppearance();
+        }
+
+        // BARU: Fungsi untuk menyesuaikan kecerahan foto
+        function adjustPhotoBrightness(value) {
+            currentPhotoBrightness = value;
+            updatePhotoAppearance();
+        }
+
+        // BARU: Fungsi untuk menyesuaikan kontras foto
+        function adjustPhotoContrast(value) {
+            currentPhotoContrast = value;
+            updatePhotoAppearance();
+        }
+
+        // BARU: Fungsi untuk menyesuaikan saturasi foto
+        function adjustPhotoSaturation(value) {
+            currentPhotoSaturation = value;
+            updatePhotoAppearance();
+        }
+
+        // BARU: Fungsi untuk menyesuaikan kehangatan foto
+        function adjustPhotoWarmth(value) {
+            currentPhotoWarmth = value;
+            updatePhotoAppearance();
+        }
+
+        // BARU: Fungsi untuk memperbarui tampilan foto
+        function updatePhotoAppearance() {
+            const image = document.getElementById('photo-editor-image');
+            let filter = '';
+            
+            // Terapkan filter berdasarkan pengaturan
+            if (currentPhotoBrightness !== 100) {
+                filter += `brightness(${currentPhotoBrightness}%) `;
+            }
+            
+            if (currentPhotoContrast !== 100) {
+                filter += `contrast(${currentPhotoContrast}%) `;
+            }
+            
+            if (currentPhotoSaturation !== 100) {
+                filter += `saturate(${currentPhotoSaturation}%) `;
+            }
+            
+            if (currentPhotoWarmth !== 100) {
+                // Warmth effect dengan hue-rotate
+                const warmthValue = (currentPhotoWarmth - 100) * 0.3;
+                filter += `hue-rotate(${warmthValue}deg) `;
+            }
+            
+            // Terapkan filter khusus
+            if (currentPhotoFilter !== 'normal') {
+                if (currentPhotoFilter === 'clarendon') {
+                    filter += 'contrast(120%) saturate(130%) brightness(110%) ';
+                } else if (currentPhotoFilter === 'gingham') {
+                    filter += 'sepia(30%) saturate(120%) ';
+                } else if (currentPhotoFilter === 'moon') {
+                    filter += 'grayscale(100%) brightness(120%) ';
+                } else if (currentPhotoFilter === 'lark') {
+                    filter += 'brightness(115%) saturate(130%) ';
+                } else if (currentPhotoFilter === 'reyes') {
+                    filter += 'sepia(40%) brightness(120%) saturate(140%) ';
+                } else if (currentPhotoFilter === 'juno') {
+                    filter += 'contrast(130%) saturate(120%) ';
+                } else if (currentPhotoFilter === 'slumber') {
+                    filter += 'brightness(110%) saturate(85%) ';
+                } else if (currentPhotoFilter === 'crema') {
+                    filter += 'sepia(50%) brightness(115%) contrast(95%) ';
+                }
+            }
+            
+            image.style.filter = filter.trim() || 'none';
+        }
+
+        // BARU: Fungsi untuk menambahkan stiker ke foto
+        function addStickerToPhoto(sticker) {
+            const preview = document.getElementById('photo-editor-preview');
+            const stickerElement = document.createElement('div');
+            stickerElement.className = 'photo-editor-sticker-preview';
+            stickerElement.innerHTML = sticker;
+            stickerElement.style.position = 'absolute';
+            stickerElement.style.top = '50%';
+            stickerElement.style.left = '50%';
+            stickerElement.style.transform = 'translate(-50%, -50%)';
+            stickerElement.style.fontSize = '40px';
+            stickerElement.style.cursor = 'move';
+            stickerElement.style.userSelect = 'none';
+            stickerElement.style.zIndex = '10';
+            
+            // Tambahkan event listener untuk drag & drop
+            makeStickerDraggable(stickerElement);
+            
+            preview.appendChild(stickerElement);
+            photoEditorStickers.push(stickerElement);
+        }
+
+        // BARU: Fungsi untuk membuat stiker dapat digerakkan
+        function makeStickerDraggable(element) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            
+            element.onmousedown = dragMouseDown;
+            
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                
+                // Dapatkan posisi kursor
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+            
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                
+                // Hitung posisi baru
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                
+                // Atur posisi elemen
+                element.style.top = (element.offsetTop - pos2) + "px";
+                element.style.left = (element.offsetLeft - pos1) + "px";
+            }
+            
+            function closeDragElement() {
+                // Hentikan pergerakan
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        // BARU: Fungsi untuk menambahkan teks ke foto
+        function addTextToPhoto() {
+            const textInput = document.getElementById('photo-text-input');
+            const text = textInput.value.trim();
+            
+            if (!text) {
+                alert('Masukkan teks terlebih dahulu!');
+                return;
+            }
+            
+            const preview = document.getElementById('photo-editor-preview');
+            const textElement = document.createElement('div');
+            textElement.className = 'photo-editor-sticker-preview';
+            textElement.innerHTML = text;
+            textElement.style.position = 'absolute';
+            textElement.style.top = '50%';
+            textElement.style.left = '50%';
+            textElement.style.transform = 'translate(-50%, -50%)';
+            textElement.style.fontSize = '24px';
+            textElement.style.color = currentTextColor;
+            textElement.style.fontWeight = 'bold';
+            textElement.style.textShadow = '2px 2px 4px rgba(0,0,0,0.5)';
+            textElement.style.cursor = 'move';
+            textElement.style.userSelect = 'none';
+            textElement.style.zIndex = '10';
+            textElement.style.padding = '10px';
+            textElement.style.backgroundColor = 'rgba(0,0,0,0.3)';
+            textElement.style.borderRadius = '5px';
+            
+            // Tambahkan event listener untuk drag & drop
+            makeStickerDraggable(textElement);
+            
+            preview.appendChild(textElement);
+            photoEditorTexts.push(textElement);
+            
+            // Reset input
+            textInput.value = '';
+        }
+
+        // BARU: Fungsi untuk mengubah warna teks
+        function changeTextColor(color) {
+            currentTextColor = color;
+            
+            // Perbarui warna semua teks yang sudah ada
+            photoEditorTexts.forEach(textElement => {
+                textElement.style.color = color;
+            });
+        }
+
+        // BARU: Fungsi untuk menyimpan foto yang sudah diedit
+        function saveEditedPhoto() {
+            // Buat canvas untuk mengekspor gambar yang sudah diedit
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const image = document.getElementById('photo-editor-image');
+            const preview = document.getElementById('photo-editor-preview');
+            
+            // Tunggu gambar dimuat
+            image.onload = function() {
+                canvas.width = image.naturalWidth;
+                canvas.height = image.naturalHeight;
+                
+                // Gambar background
+                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                
+                // Terapkan filter
+                ctx.filter = image.style.filter || 'none';
+                
+                // Gambar ulang gambar dengan filter
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                
+                // Reset filter untuk elemen lainnya
+                ctx.filter = 'none';
+                
+                // Gambar stiker dan teks
+                const stickers = preview.querySelectorAll('.photo-editor-sticker-preview');
+                stickers.forEach(sticker => {
+                    // Hitung posisi relatif stiker
+                    const rect = sticker.getBoundingClientRect();
+                    const previewRect = preview.getBoundingClientRect();
+                    
+                    const x = (rect.left - previewRect.left) / previewRect.width * canvas.width;
+                    const y = (rect.top - previewRect.top) / previewRect.height * canvas.height;
+                    const width = rect.width / previewRect.width * canvas.width;
+                    const height = rect.height / previewRect.height * canvas.height;
+                    
+                    // Jika stiker adalah emoji
+                    if (sticker.textContent && sticker.textContent.length === 1) {
+                        ctx.font = `${height}px Arial`;
+                        ctx.fillStyle = sticker.style.color || 'black';
+                        ctx.fillText(sticker.textContent, x, y + height);
+                    } else {
+                        // Jika stiker adalah teks
+                        ctx.font = `${height * 0.6}px Arial`;
+                        ctx.fillStyle = sticker.style.color || 'black';
+                        ctx.fillText(sticker.textContent, x, y + height);
+                    }
+                });
+                
+                // Simpan sebagai media baru
+                currentMedia = canvas.toDataURL('image/png');
+                originalMedia = currentMedia; // Simpan media asli
+                
+                // Kembali ke preview upload
+                showUploadPage();
+                previewContent('photo');
+            };
+            
+            // Memuat ulang gambar untuk memastikan onload dipicu
+            image.src = image.src;
         }
 
         // 1. Proses Pendaftaran -> Lanjut ke Setup Profil
@@ -6349,7 +7231,7 @@
                     showWelcomeScreen(); // User tidak ditemukan, arahkan ke halaman awal
                 }
             } else {
-                // Jika tidak ada data, tampilkan halaman awal
+                // Jika tidak ada halaman, tampilkan halaman awal
                 showWelcomeScreen();
             }
 
