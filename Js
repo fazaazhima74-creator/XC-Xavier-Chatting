@@ -1,0 +1,460 @@
+// Fungsi untuk menampilkan pengguna yang tersedia (saat pencarian kosong)
+function displayAvailableUsers() {
+    const searchResults = document.getElementById('searchResults');
+    
+    // Ambil pengguna yang bukan diri sendiri, bukan operator, dan belum menjadi teman
+    const availableUsers = allUsers.filter(user => 
+        (user.email !== currentUser.email) && 
+        !user.isOperator &&
+        !friends.some(friend => friend.email === user.email)
+    );
+    
+    if (availableUsers.length === 0) {
+        searchResults.innerHTML = '<p style="text-align: center; color: #a0a0a0; font-size: 14px; padding: 10px;">Tidak ada pengguna yang tersedia untuk ditambahkan.</p>';
+        return;
+    }
+    
+    // Batasi hanya 5 pengguna untuk ditampilkan
+    const limitedUsers = availableUsers.slice(0, 5);
+    displayUserResults(limitedUsers);
+}
+
+// Fungsi untuk menampilkan hasil pencarian pengguna
+function displayUserResults(users) {
+    const searchResults = document.getElementById('searchResults');
+    
+    let resultsHTML = '';
+    users.forEach(user => {
+        resultsHTML += `
+            <div class="friend-result-item">
+                <div class="friend-info">
+                    <img src="${user.img || DEFAULT_PROFILE_IMG}" alt="${user.name}" class="friend-avatar">
+                    <div class="friend-details">
+                        <div class="friend-name">${user.name || user.email}</div>
+                        <div class="friend-username">${user.email}</div>
+                    </div>
+                </div>
+                <div class="add-friend-icon" onclick="addFriend('${user.email}')">
+                    +
+                </div>
+            </div>
+        `;
+    });
+    
+    searchResults.innerHTML = resultsHTML;
+}
+
+// Fungsi untuk mencari teman
+function searchFriends() {
+    const searchTerm = document.getElementById('searchFriendInput').value.toLowerCase();
+    const searchResults = document.getElementById('searchResults');
+    
+    if (searchTerm.length === 0) {
+        // Jika pencarian kosong, tampilkan beberapa pengguna yang bukan teman
+        displayAvailableUsers();
+        return;
+    }
+    
+    // Filter pengguna dari allUsers yang sesuai dengan pencarian, bukan diri sendiri, bukan operator, dan belum menjadi teman
+    const filteredUsers = allUsers.filter(user => 
+        (user.email !== currentUser.email) && // bukan diri sendiri
+        !user.isOperator && // bukan operator
+        !friends.some(friend => friend.email === user.email) && // belum menjadi teman
+        (user.name && user.name.toLowerCase().includes(searchTerm) || 
+         user.email && user.email.toLowerCase().includes(searchTerm))
+    );
+    
+    if (filteredUsers.length === 0) {
+        searchResults.innerHTML = '<p style="text-align: center; color: #a0a0a0; font-size: 14px; padding: 10px;">Tidak ada hasil ditemukan</p>';
+        return;
+    }
+    
+    displayUserResults(filteredUsers);
+}
+
+// Fungsi untuk menambahkan teman
+function addFriend(userEmail) {
+    // Cari data pengguna dari allUsers
+    const userToAdd = allUsers.find(user => user.email === userEmail);
+    
+    if (!userToAdd) {
+        alert('Pengguna tidak ditemukan!');
+        return;
+    }
+    
+    // Cek apakah sudah menjadi teman
+    const isAlreadyFriend = friends.some(friend => friend.email === userEmail);
+    
+    if (isAlreadyFriend) {
+        alert(`${userToAdd.name || userToAdd.email} sudah menjadi teman Anda!`);
+        return;
+    }
+    
+    // Tambahkan ke daftar teman
+    friends.push({
+        id: userToAdd.id || Date.now().toString(),
+        name: userToAdd.name || userToAdd.email,
+        email: userToAdd.email,
+        img: userToAdd.img || DEFAULT_PROFILE_IMG,
+        online: Math.random() > 0.5,
+        addedAt: new Date().toISOString()
+    });
+    
+    saveFriends();
+    
+    // Refresh tampilan pencarian
+    searchFriends();
+    
+    // Refresh daftar teman
+    displayFriends();
+    
+    alert(`${userToAdd.name || userToAdd.email} telah ditambahkan sebagai teman!`);
+    
+    // Buat chat dengan teman baru
+    const friendChatId = [currentUser.email, userEmail].sort().join('_');
+    if (!friendChats[friendChatId]) {
+        friendChats[friendChatId] = {
+            participants: [currentUser.email, userEmail],
+            messages: [{
+                id: Date.now(),
+                sender: userEmail,
+                text: `Halo! Saya ${userToAdd.name || userToAdd.email}. Senang bertemu dengan Anda!`,
+                timestamp: new Date().toISOString(),
+                read: false
+            }]
+        };
+        saveFriendChats();
+    }
+}
+
+// Fungsi logout
+function logout() {
+    currentUser = {}; // Hapus data pengguna saat ini
+    localStorage.removeItem(USER_STORAGE_KEY); // Hapus data dari localStorage
+    showWelcomeScreen(); // Kembali ke halaman awal
+    alert("Anda telah logout.");
+}
+
+
+
+
+
+// Di bagian awal script, setelah deklarasi kunci localStorage
+// Hapus data pengguna yang sudah ada untuk memulai dari awal
+localStorage.removeItem(USER_STORAGE_KEY);
+localStorage.removeItem(USERS_STORAGE_KEY);
+localStorage.removeItem(FRIENDS_STORAGE_KEY);
+localStorage.removeItem(FRIEND_CHATS_STORAGE_KEY);
+localStorage.removeItem(POSTS_STORAGE_KEY);
+
+
+
+
+// BARU: Fungsi untuk memuat semua pengguna
+function loadAllUsers() {
+    const storedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+    let users = storedUsers ? JSON.parse(storedUsers) : [];
+    
+    // Tambahkan operator jika belum ada
+    const operatorExists = users.some(u => u.email === 'operator@xcxavier.com');
+    if (!operatorExists) {
+        users.push({
+            id: 'operator',
+            name: '🤖 Operator XC Xavier',
+            email: 'operator@xcxavier.com',
+            img: OPERATOR_IMG,
+            isOperator: true,
+            password: 'operator123' // Password default untuk operator
+        });
+        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+    }
+    
+    return users;
+}
+
+
+
+
+
+
+// PERUBAHAN: Fungsi untuk mencari teman - DIPERBAIKI
+function searchFriends() {
+    const searchTerm = document.getElementById('searchFriendInput').value.toLowerCase();
+    const searchResults = document.getElementById('searchResults');
+    
+    if (searchTerm.length === 0) {
+        // Jika pencarian kosong, tidak tampilkan apa-apa
+        searchResults.innerHTML = '<p style="text-align: center; color: #a0a0a0; font-size: 14px; padding: 10px;">Masukkan nama atau email untuk mencari teman</p>';
+        return;
+    }
+    
+    // Cari dari database pengguna yang sebenarnya
+    const filteredUsers = allUsers.filter(user => 
+        (user.email !== currentUser.email) && // Bukan diri sendiri
+        !user.isOperator && // Bukan operator
+        (user.name && user.name.toLowerCase().includes(searchTerm) || 
+         user.email && user.email.toLowerCase().includes(searchTerm))
+    );
+    
+    if (filteredUsers.length === 0) {
+        searchResults.innerHTML = '<p style="text-align: center; color: #a0a0a0; font-size: 14px; padding: 10px;">Tidak ada hasil ditemukan</p>';
+        return;
+    }
+    
+    let resultsHTML = '';
+    filteredUsers.forEach(user => {
+        // Cek apakah user sudah menjadi teman
+        const isAlreadyFriend = friends.some(friend => 
+            friend.email === user.email
+        );
+        
+        resultsHTML += `
+            <div class="friend-result-item">
+                <div class="friend-info">
+                    <img src="${user.img || DEFAULT_PROFILE_IMG}" alt="${user.name}" class="friend-avatar">
+                    <div class="friend-details">
+                        <div class="friend-name">${user.name || user.email}</div>
+                        <div class="friend-username">${user.email}</div>
+                    </div>
+                </div>
+                <div class="add-friend-icon" onclick="addFriend('${user.email}')" style="${isAlreadyFriend ? 'background: #4CAF50;' : ''}">
+                    ${isAlreadyFriend ? '✓' : '+'}
+                </div>
+            </div>
+        `;
+    });
+    
+    searchResults.innerHTML = resultsHTML;
+}
+
+// Hapus fungsi displaySampleUsersForAdding karena tidak perlu lagi
+
+
+
+
+
+// PERUBAHAN: Fungsi untuk menambahkan teman - DIPERBAIKI
+function addFriend(userEmail) {
+    // Cari data pengguna dari database
+    const userToAdd = allUsers.find(user => user.email === userEmail);
+    
+    if (!userToAdd) {
+        alert('Pengguna tidak ditemukan!');
+        return;
+    }
+    
+    // Cek apakah userEmail adalah diri sendiri
+    if (userEmail === currentUser.email) {
+        alert('Tidak bisa menambahkan diri sendiri!');
+        return;
+    }
+    
+    // Cek apakah sudah menjadi teman
+    const isAlreadyFriend = friends.some(friend => friend.email === userEmail);
+    
+    if (isAlreadyFriend) {
+        alert(`${userToAdd.name || userToAdd.email} sudah menjadi teman Anda!`);
+        return;
+    }
+    
+    // Tambahkan ke daftar teman
+    friends.push({
+        id: userToAdd.id || Date.now().toString(),
+        name: userToAdd.name || userToAdd.email,
+        email: userToAdd.email,
+        img: userToAdd.img || DEFAULT_PROFILE_IMG,
+        online: Math.random() > 0.5,
+        addedAt: new Date().toISOString()
+    });
+    
+    saveFriends();
+    
+    // Refresh tampilan pencarian
+    searchFriends();
+    
+    // Refresh daftar teman
+    displayFriends();
+    
+    alert(`${userToAdd.name || userToAdd.email} telah ditambahkan sebagai teman!`);
+    
+    // Buat chat dengan teman baru
+    const friendChatId = [currentUser.email, userEmail].sort().join('_');
+    if (!friendChats[friendChatId]) {
+        friendChats[friendChatId] = {
+            participants: [currentUser.email, userEmail],
+            messages: [{
+                id: Date.now(),
+                sender: userEmail,
+                text: `Halo! Saya ${userToAdd.name || userToAdd.email}. Senang bertemu dengan Anda!`,
+                timestamp: new Date().toISOString(),
+                read: false
+            }]
+        };
+        saveFriendChats();
+    }
+}
+
+
+
+
+
+// Fungsi untuk Logout yang benar-benar membersihkan sesi
+function logout() {
+    // Konfirmasi logout
+    const confirmLogout = confirm("Apakah Anda yakin ingin logout?");
+    if (!confirmLogout) return;
+    
+    // Buat pesan konfirmasi visual
+    const logoutMessage = document.createElement('div');
+    logoutMessage.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--card-color);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        z-index: 1000;
+        text-align: center;
+        border: 2px solid var(--accent-purple);
+        max-width: 400px;
+        width: 90%;
+    `;
+    
+    logoutMessage.innerHTML = `
+        <h3 style="color: var(--accent-purple); margin-bottom: 15px;">👋 Keluar dari Aplikasi</h3>
+        <p style="margin-bottom: 20px;">Anda akan logout dari akun <strong>${currentUser.name || currentUser.email}</strong></p>
+        <p style="margin-bottom: 20px; color: #a0a0a0; font-size: 14px;">Semua data sesi akan dihapus dan Anda perlu login kembali untuk mengakses akun.</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button onclick="confirmLogoutAction()" style="padding: 10px 20px; background: var(--accent-purple); color: white; border: none; border-radius: 8px; cursor: pointer;">Ya, Logout</button>
+            <button onclick="this.parentElement.parentElement.remove();" style="padding: 10px 20px; background: rgba(146, 125, 252, 0.2); color: var(--accent-purple); border: 1px solid var(--accent-purple); border-radius: 8px; cursor: pointer;">Batal</button>
+        </div>
+    `;
+    
+    document.body.appendChild(logoutMessage);
+}
+
+// Fungsi untuk konfirmasi logout
+function confirmLogoutAction() {
+    // Reset semua data sesi
+    currentUser = {};
+    uploadedFileUrl = '';
+    currentChatUser = null;
+    currentChatId = null;
+    currentFriendChatUser = null;
+    currentFriendChatId = null;
+    
+    // Hapus data pengguna dari localStorage (hanya data sesi, bukan data akun)
+    localStorage.removeItem(USER_STORAGE_KEY);
+    
+    // Hapus pesan konfirmasi
+    const logoutMessage = document.querySelector('div[style*="z-index: 1000"]');
+    if (logoutMessage) logoutMessage.remove();
+    
+    // Tampilkan animasi logout
+    const logoutAnimation = document.createElement('div');
+    logoutAnimation.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--bg-color);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.5s;
+    `;
+    
+    logoutAnimation.innerHTML = `
+        <div style="font-size: 60px; margin-bottom: 20px;">👋</div>
+        <h3 style="color: var(--accent-purple); margin-bottom: 10px;">Logout Berhasil</h3>
+        <p style="color: var(--text-color); opacity: 0.8;">Anda telah keluar dari aplikasi</p>
+    `;
+    
+    document.body.appendChild(logoutAnimation);
+    
+    // Setelah 1.5 detik, tampilkan halaman awal
+    setTimeout(() => {
+        logoutAnimation.style.opacity = '0';
+        setTimeout(() => {
+            logoutAnimation.remove();
+            showWelcomeScreen();
+        }, 500);
+    }, 1500);
+}
+
+
+
+
+
+
+// 7. Penanganan saat Halaman Dimuat
+function initApp() {
+    // RESET DATA PENGUNGA YANG SUDAH ADA (untuk testing)
+    localStorage.removeItem(USER_STORAGE_KEY);
+    
+    // Jangan hapus USERS_STORAGE_KEY agar data akun tetap ada
+    // localStorage.removeItem(USERS_STORAGE_KEY); // Jangan hapus ini agar data akun tetap tersimpan
+    
+    // Cek status koneksi
+    isOnline = navigator.onLine;
+    
+    // Cek apakah ada user yang sudah login
+    const storedUser = loadUserData();
+    if (storedUser && storedUser.email) {
+        // Cari user di daftar semua pengguna
+        const user = allUsers.find(u => u.email === storedUser.email);
+        if (user) {
+            currentUser = user;
+            
+            // Jika ada data di localStorage, cek kelengkapan profil
+            if (currentUser.name && currentUser.img && currentUser.img !== DEFAULT_PROFILE_IMG) {
+                showHome(); // Langsung ke Beranda
+            } else {
+                showEditProfile(); // Lanjutkan setup profil
+            }
+        } else {
+            // Jika user tidak ditemukan di database, hapus data sesi
+            localStorage.removeItem(USER_STORAGE_KEY);
+            showWelcomeScreen(); // User tidak ditemukan, arahkan ke halaman awal
+        }
+    } else {
+        // Jika tidak ada halaman, tampilkan halaman awal
+        showWelcomeScreen();
+    }
+
+    // PERUBAHAN: Setup event listeners untuk settings
+    setupSettingsEventListeners();
+    
+    // PERUBAHAN: Terapkan settings saat startup
+    document.body.classList.toggle('light-mode', !appSettings.darkMode);
+}
+
+
+
+
+
+
+// BARU: Fungsi untuk menampilkan halaman awal
+function showWelcomeScreen() {
+    hideAllScreens();
+    document.getElementById('welcome-screen').style.display = 'block';
+    
+    // Reset form pendaftaran dan login
+    document.getElementById('reg_email').value = '';
+    document.getElementById('reg_password').value = '';
+    document.getElementById('log_email').value = '';
+    document.getElementById('log_password').value = '';
+    document.getElementById('forgot_email').value = '';
+    
+    // Reset body styling
+    document.body.style.display = 'flex';
+    document.body.style.justifyContent = 'center';
+    document.body.style.alignItems = 'center';
+    document.body.style.minHeight = '100vh';
+    document.body.style.padding = '20px';
+}
