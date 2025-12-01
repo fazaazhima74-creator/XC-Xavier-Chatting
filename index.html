@@ -2570,119 +2570,6 @@
             max-height: 100px;
         }
 
-        /* BARU: Gaya untuk komentar di Shorts */
-        .shorts-comments-panel {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--card-color);
-            border-radius: 20px 20px 0 0;
-            padding: 20px;
-            max-height: 80vh;
-            overflow-y: auto;
-            transform: translateY(100%);
-            transition: transform 0.3s ease-out;
-            z-index: 1000;
-        }
-
-        .shorts-comments-panel.active {
-            transform: translateY(0);
-        }
-
-        .shorts-comments-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .shorts-comments-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .shorts-comments-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: var(--accent-purple);
-            cursor: pointer;
-        }
-
-        .shorts-comment-item {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding: 10px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .shorts-comment-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .shorts-comment-content {
-            flex: 1;
-        }
-
-        .shorts-comment-user {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .shorts-comment-text {
-            font-size: 14px;
-            line-height: 1.4;
-        }
-
-        .shorts-comment-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 5px;
-            font-size: 12px;
-            color: #a0a0a0;
-        }
-
-        .shorts-comment-action {
-            cursor: pointer;
-        }
-
-        .shorts-comment-action:hover {
-            color: var(--accent-purple);
-        }
-
-        .shorts-comment-input {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .shorts-comment-input input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            background: var(--input-bg);
-            color: var(--text-color);
-        }
-
-        .shorts-comment-send {
-            padding: 12px 20px;
-            background: var(--accent-purple);
-            border: none;
-            border-radius: 20px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
         /* Media Query Responsif */
         @media (max-width: 900px) {
             .home-container {
@@ -3297,21 +3184,27 @@
         </div>
         <div class="shorts-content" id="shorts-content">
             <!-- Video shorts akan ditampilkan di sini -->
-        </div>
-    </div>
-
-    <!-- BARU: Panel Komentar untuk Shorts -->
-    <div class="shorts-comments-panel" id="shorts-comments-panel">
-        <div class="shorts-comments-header">
-            <div class="shorts-comments-title">Komentar</div>
-            <button class="shorts-comments-close" onclick="closeShortsComments()">×</button>
-        </div>
-        <div class="shorts-comments-list" id="shorts-comments-list">
-            <!-- Komentar akan ditampilkan di sini -->
-        </div>
-        <div class="shorts-comment-input">
-            <input type="text" id="shorts-comment-input" placeholder="Tulis komentar...">
-            <button class="shorts-comment-send" onclick="addShortsComment()">Kirim</button>
+            <div class="short-video">
+                <video src="" controls autoplay muted loop></video>
+                <div class="video-info">
+                    <h3 id="shorts-username">@pengguna</h3>
+                    <p id="shorts-description">Deskripsi video pendek</p>
+                </div>
+                <div class="video-actions">
+                    <button class="action-btn">
+                        <div class="action-icon">❤️</div>
+                        <div class="action-count" id="shorts-likes">0</div>
+                    </button>
+                    <button class="action-btn">
+                        <div class="action-icon">💬</div>
+                        <div class="action-count" id="shorts-comments">0</div>
+                    </button>
+                    <button class="action-btn">
+                        <div class="action-icon">↗️</div>
+                        <div class="action-count">Share</div>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -3741,13 +3634,13 @@
         const LIKED_POSTS_KEY = 'social_app_liked_posts';
         const DEFAULT_PROFILE_IMG = 'https://via.placeholder.com/80/927dfc/ffffff?text=U';
         
-        // Hapus data contoh untuk fitur pertemanan
+        // Data contoh pengguna untuk fitur pencarian teman - DIHAPUS
         const sampleUsers = [];
         
-        // Hapus data contoh untuk konten video
+        // Data contoh untuk konten video - DIHAPUS
         const sampleVideos = [];
         
-        // Hapus data contoh untuk live streaming
+        // Data contoh untuk live streaming - DIHAPUS
         const sampleLiveStreams = [];
         
         // Coba muat data pengguna dari localStorage saat startup
@@ -3820,10 +3713,6 @@
         let currentPhotoContrast = 100;
         let currentPhotoSaturation = 100;
         let currentPhotoWarmth = 100;
-
-        // BARU: Variabel untuk shorts
-        let currentShortsIndex = 0;
-        let currentShortsPost = null;
 
         // Fungsi untuk memuat data pengguna dari localStorage
         function loadUserData() {
@@ -5842,14 +5731,12 @@
         // BARU: Fungsi untuk menampilkan video shorts
         function displayShorts() {
             const shortsContent = document.getElementById('shorts-content');
+            const allPosts = posts; // Tampilkan semua postingan di shorts
             
-            // Filter hanya postingan yang memiliki media (video atau foto)
-            const videoPosts = posts.filter(post => post.type === 'video' || post.type === 'photo');
-            
-            if (videoPosts.length === 0) {
+            if (allPosts.length === 0) {
                 shortsContent.innerHTML = `
                     <div class="no-posts-message">
-                        <p>Belum ada konten video. Buat konten video pertama Anda!</p>
+                        <p>Belum ada konten. Buat konten pertama Anda!</p>
                         <button class="camera-btn" onclick="showUploadPage()" style="margin-top: 15px;">Buat Konten</button>
                     </div>
                 `;
@@ -5858,31 +5745,33 @@
             
             let shortsHTML = '';
             
-            videoPosts.forEach((post, index) => {
+            allPosts.forEach(post => {
                 // BARU: Cek apakah post sudah dilike oleh user saat ini
                 const userLikedPosts = likedPosts[currentUser.email] || [];
                 const isLiked = userLikedPosts.includes(post.id);
                 
                 shortsHTML += `
-                    <div class="short-video" data-post-id="${post.id}" data-index="${index}">
+                    <div class="short-video">
                         ${post.type === 'photo' ? 
                             `<img src="${post.media}" style="width:100%; height:100%; object-fit:cover;">` : 
-                            `<video src="${post.media}" controls autoplay muted loop style="width:100%; height:100%; object-fit:cover;"></video>`
+                            post.type === 'video' ? 
+                            `<video src="${post.media}" controls autoplay muted loop style="width:100%; height:100%; object-fit:cover;"></video>` :
+                            `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:var(--card-color); color:var(--text-color); padding:20px; font-size:18px;">${post.media}</div>`
                         }
                         <div class="video-info">
                             <h3>${post.userName}</h3>
                             <p>${post.description || 'Konten menarik'}</p>
                         </div>
                         <div class="video-actions">
-                            <button class="action-btn" onclick="toggleShortsLike(${post.id})">
+                            <button class="action-btn" onclick="toggleLike(${post.id})">
                                 <div class="action-icon">${isLiked ? '❤️' : '🤍'}</div>
                                 <div class="action-count">${post.likes}</div>
                             </button>
-                            <button class="action-btn" onclick="showShortsComments(${post.id})">
+                            <button class="action-btn" onclick="toggleComments(${post.id})">
                                 <div class="action-icon">💬</div>
                                 <div class="action-count">${post.comments.length}</div>
                             </button>
-                            <button class="action-btn" onclick="shareShorts(${post.id})">
+                            <button class="action-btn" onclick="sharePost(${post.id})">
                                 <div class="action-icon">↗️</div>
                                 <div class="action-count">Share</div>
                             </button>
@@ -5892,242 +5781,6 @@
             });
             
             shortsContent.innerHTML = shortsHTML;
-            
-            // Set currentShortsIndex ke 0
-            currentShortsIndex = 0;
-            
-            // Auto-play video pertama
-            const firstVideo = shortsContent.querySelector('.short-video video');
-            if (firstVideo) {
-                firstVideo.play();
-            }
-            
-            // Tambahkan event listener untuk scroll
-            shortsContent.addEventListener('scroll', handleShortsScroll);
-        }
-
-        // BARU: Fungsi untuk menangani scroll di shorts
-        function handleShortsScroll() {
-            const shortsContent = document.getElementById('shorts-content');
-            const shortVideos = shortsContent.querySelectorAll('.short-video');
-            const scrollPosition = shortsContent.scrollTop;
-            const windowHeight = shortsContent.clientHeight;
-            
-            // Cari video yang sedang aktif (yang paling dekat dengan tengah layar)
-            let activeIndex = 0;
-            let minDistance = Infinity;
-            
-            shortVideos.forEach((video, index) => {
-                const rect = video.getBoundingClientRect();
-                const distance = Math.abs(rect.top + rect.height/2 - windowHeight/2);
-                
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    activeIndex = index;
-                }
-            });
-            
-            // Jika video aktif berubah, pause video sebelumnya dan play video baru
-            if (activeIndex !== currentShortsIndex) {
-                const previousVideo = shortVideos[currentShortsIndex].querySelector('video');
-                if (previousVideo) {
-                    previousVideo.pause();
-                }
-                
-                const currentVideo = shortVideos[activeIndex].querySelector('video');
-                if (currentVideo) {
-                    currentVideo.play();
-                }
-                
-                currentShortsIndex = activeIndex;
-            }
-        }
-
-        // BARU: Fungsi untuk toggle like di shorts
-        function toggleShortsLike(postId) {
-            const post = posts.find(p => p.id === postId);
-            if (!post) return;
-            
-            // Inisialisasi likedPosts untuk user saat ini jika belum ada
-            if (!likedPosts[currentUser.email]) {
-                likedPosts[currentUser.email] = [];
-            }
-            
-            const userLikedPosts = likedPosts[currentUser.email];
-            const isLiked = userLikedPosts.includes(postId);
-            
-            if (isLiked) {
-                // Unlike post
-                post.likes--;
-                likedPosts[currentUser.email] = userLikedPosts.filter(id => id !== postId);
-            } else {
-                // Like post
-                post.likes++;
-                likedPosts[currentUser.email].push(postId);
-            }
-            
-            savePosts();
-            saveLikedPosts();
-            
-            // Update tampilan like di shorts
-            const actionBtn = document.querySelector(`.short-video[data-post-id="${postId}"] .action-btn:first-child`);
-            if (actionBtn) {
-                const icon = actionBtn.querySelector('.action-icon');
-                const count = actionBtn.querySelector('.action-count');
-                
-                icon.textContent = isLiked ? '🤍' : '❤️';
-                count.textContent = post.likes;
-            }
-        }
-
-        // BARU: Fungsi untuk menampilkan komentar di shorts
-        function showShortsComments(postId) {
-            const post = posts.find(p => p.id === postId);
-            if (!post) return;
-            
-            currentShortsPost = post;
-            
-            // Tampilkan panel komentar
-            const commentsPanel = document.getElementById('shorts-comments-panel');
-            commentsPanel.classList.add('active');
-            
-            // Tampilkan komentar
-            displayShortsComments();
-        }
-
-        // BARU: Fungsi untuk menampilkan komentar di shorts
-        function displayShortsComments() {
-            if (!currentShortsPost) return;
-            
-            const commentsList = document.getElementById('shorts-comments-list');
-            
-            if (currentShortsPost.comments.length === 0) {
-                commentsList.innerHTML = '<p style="text-align: center; color: #a0a0a0; margin-top: 20px;">Belum ada komentar. Jadilah yang pertama berkomentar!</p>';
-                return;
-            }
-            
-            let commentsHTML = '';
-            
-            currentShortsPost.comments.forEach(comment => {
-                const commentTime = new Date(comment.timestamp);
-                const now = new Date();
-                const diffMs = now - commentTime;
-                const diffMins = Math.floor(diffMs / 60000);
-                const diffHours = Math.floor(diffMs / 3600000);
-                const diffDays = Math.floor(diffMs / 86400000);
-                
-                let timeAgo = '';
-                if (diffMins < 1) {
-                    timeAgo = 'Baru saja';
-                } else if (diffMins < 60) {
-                    timeAgo = `${diffMins} menit lalu`;
-                } else if (diffHours < 24) {
-                    timeAgo = `${diffHours} jam lalu`;
-                } else {
-                    timeAgo = `${diffDays} hari lalu`;
-                }
-                
-                commentsHTML += `
-                    <div class="shorts-comment-item">
-                        <img src="${comment.userAvatar}" alt="${comment.userName}" class="shorts-comment-avatar">
-                        <div class="shorts-comment-content">
-                            <div class="shorts-comment-user">${comment.userName}</div>
-                            <div class="shorts-comment-text">${comment.text}</div>
-                            <div class="shorts-comment-actions">
-                                <span class="shorts-comment-action">${timeAgo}</span>
-                                <span class="shorts-comment-action" onclick="likeShortsComment(${currentShortsPost.id}, ${comment.id})">Suka (${comment.likes})</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            commentsList.innerHTML = commentsHTML;
-        }
-
-        // BARU: Fungsi untuk menutup komentar di shorts
-        function closeShortsComments() {
-            const commentsPanel = document.getElementById('shorts-comments-panel');
-            commentsPanel.classList.remove('active');
-            currentShortsPost = null;
-        }
-
-        // BARU: Fungsi untuk menambahkan komentar di shorts
-        function addShortsComment() {
-            if (!currentShortsPost) return;
-            
-            const commentInput = document.getElementById('shorts-comment-input');
-            const commentText = commentInput.value.trim();
-            
-            if (!commentText) return;
-            
-            const newComment = {
-                id: Date.now(),
-                userId: currentUser.email,
-                userName: currentUser.name,
-                userAvatar: currentUser.img,
-                text: commentText,
-                timestamp: new Date().toISOString(),
-                likes: 0
-            };
-            
-            currentShortsPost.comments.push(newComment);
-            savePosts();
-            
-            // Reset input dan refresh tampilan
-            commentInput.value = '';
-            displayShortsComments();
-            
-            // Update jumlah komentar di shorts
-            const actionBtn = document.querySelector(`.short-video[data-post-id="${currentShortsPost.id}"] .action-btn:nth-child(2)`);
-            if (actionBtn) {
-                const count = actionBtn.querySelector('.action-count');
-                count.textContent = currentShortsPost.comments.length;
-            }
-        }
-
-        // BARU: Fungsi untuk menyukai komentar di shorts
-        function likeShortsComment(postId, commentId) {
-            const post = posts.find(p => p.id === postId);
-            if (!post) return;
-            
-            const comment = post.comments.find(c => c.id === commentId);
-            if (!comment) return;
-            
-            comment.likes++;
-            savePosts();
-            displayShortsComments();
-        }
-
-        // BARU: Fungsi untuk membagikan shorts
-        function shareShorts(postId) {
-            const post = posts.find(p => p.id === postId);
-            if (!post) return;
-            
-            post.shares++;
-            savePosts();
-            
-            // Simulasi berbagi
-            if (navigator.share) {
-                navigator.share({
-                    title: `Shorts oleh ${post.userName}`,
-                    text: post.description,
-                    url: window.location.href
-                }).then(() => {
-                    console.log('Shorts berhasil dibagikan');
-                }).catch(error => {
-                    console.log('Error sharing:', error);
-                });
-            } else {
-                alert('Shorts berhasil dibagikan!');
-            }
-            
-            // Update jumlah share di shorts
-            const actionBtn = document.querySelector(`.short-video[data-post-id="${postId}"] .action-btn:last-child`);
-            if (actionBtn) {
-                const count = actionBtn.querySelector('.action-count');
-                count.textContent = post.shares;
-            }
         }
 
         // PERUBAHAN: Fungsi untuk update navigasi bawah
@@ -7598,3 +7251,9 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
