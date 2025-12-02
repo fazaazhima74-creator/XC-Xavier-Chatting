@@ -1,154 +1,76 @@
-// Fungsi untuk menampilkan pengguna yang tersedia (saat pencarian kosong)
-function displayAvailableUsers() {
-    const searchResults = document.getElementById('searchResults');
-    
-    // Ambil pengguna yang bukan diri sendiri, bukan operator, dan belum menjadi teman
-    const availableUsers = allUsers.filter(user => 
-        (user.email !== currentUser.email) && 
-        !user.isOperator &&
-        !friends.some(friend => friend.email === user.email)
-    );
-    
-    if (availableUsers.length === 0) {
-        searchResults.innerHTML = '<p style="text-align: center; color: #a0a0a0; font-size: 14px; padding: 10px;">Tidak ada pengguna yang tersedia untuk ditambahkan.</p>';
-        return;
-    }
-    
-    // Batasi hanya 5 pengguna untuk ditampilkan
-    const limitedUsers = availableUsers.slice(0, 5);
-    displayUserResults(limitedUsers);
+// Kunci localStorage untuk data pengguna dan settings
+const USER_STORAGE_KEY = 'social_app_user';
+const SETTINGS_STORAGE_KEY = 'social_app_settings';
+const POSTS_STORAGE_KEY = 'social_app_posts';
+const USERS_STORAGE_KEY = 'social_app_users';
+const CHATS_STORAGE_KEY = 'social_app_chats';
+const FRIENDS_STORAGE_KEY = 'social_app_friends';
+const FRIEND_CHATS_STORAGE_KEY = 'social_app_friend_chats';
+const SEARCH_HISTORY_KEY = 'social_app_search_history';
+const FRIEND_REQUESTS_KEY = 'social_app_friend_requests';
+const LIKED_POSTS_KEY = 'social_app_liked_posts';
+const DEFAULT_PROFILE_IMG = 'https://via.placeholder.com/80/927dfc/ffffff?text=U';
+const OPERATOR_IMG = 'https://via.placeholder.com/80/927dfc/ffffff?text=🤖';
+
+// Variabel untuk sistem upload kamera
+let currentMode = 'photo'; // 'photo' atau 'video'
+let currentStream = null;
+let mediaRecorder = null;
+let recordedChunks = [];
+let recordingTimer = null;
+let recordingSeconds = 0;
+let currentMedia = null; // Untuk menyimpan media yang ditangkap
+let currentMediaType = null; // 'photo' atau 'video'
+let currentMediaURL = null; // URL untuk media yang ditangkap
+let isRecording = false;
+
+// Coba muat data pengguna dari localStorage saat startup
+let currentUser = loadUserData(); 
+let uploadedFileUrl = currentUser.img || '';
+let isLightMode = false;
+
+// PERUBAHAN: Load settings dan posts dari localStorage
+let appSettings = loadSettings();
+let posts = loadPosts();
+let allUsers = loadAllUsers();
+let chats = loadChats();
+let friends = loadFriends();
+let friendChats = loadFriendChats();
+let searchHistory = loadSearchHistory();
+let friendRequests = loadFriendRequests();
+let likedPosts = loadLikedPosts();
+
+// BARU: Variabel untuk halaman profil
+let currentProfileTab = 'posts';
+let currentProfileUser = null;
+
+// BARU: Variabel untuk halaman chat
+let currentChatUser = {
+    id: 'operator',
+    name: '🤖 Operator XC Xavier',
+    email: 'operator@xcxavier.com',
+    img: OPERATOR_IMG,
+    status: 'Online'
+};
+let currentChatId = null;
+
+// BARU: Variabel untuk chat dengan teman
+let currentFriendChatUser = null;
+let currentFriendChatId = null;
+
+// BARU: Variabel untuk status koneksi
+let isOnline = true;
+
+// Fungsi untuk memuat data pengguna dari localStorage
+function loadUserData() {
+    const storedData = localStorage.getItem(USER_STORAGE_KEY);
+    return storedData ? JSON.parse(storedData) : {};
 }
 
-// Fungsi untuk menampilkan hasil pencarian pengguna
-function displayUserResults(users) {
-    const searchResults = document.getElementById('searchResults');
-    
-    let resultsHTML = '';
-    users.forEach(user => {
-        resultsHTML += `
-            <div class="friend-result-item">
-                <div class="friend-info">
-                    <img src="${user.img || DEFAULT_PROFILE_IMG}" alt="${user.name}" class="friend-avatar">
-                    <div class="friend-details">
-                        <div class="friend-name">${user.name || user.email}</div>
-                        <div class="friend-username">${user.email}</div>
-                    </div>
-                </div>
-                <div class="add-friend-icon" onclick="addFriend('${user.email}')">
-                    +
-                </div>
-            </div>
-        `;
-    });
-    
-    searchResults.innerHTML = resultsHTML;
+// Fungsi untuk menyimpan data pengguna ke localStorage
+function saveUserData(userData) {
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
 }
-
-// Fungsi untuk mencari teman
-function searchFriends() {
-    const searchTerm = document.getElementById('searchFriendInput').value.toLowerCase();
-    const searchResults = document.getElementById('searchResults');
-    
-    if (searchTerm.length === 0) {
-        // Jika pencarian kosong, tampilkan beberapa pengguna yang bukan teman
-        displayAvailableUsers();
-        return;
-    }
-    
-    // Filter pengguna dari allUsers yang sesuai dengan pencarian, bukan diri sendiri, bukan operator, dan belum menjadi teman
-    const filteredUsers = allUsers.filter(user => 
-        (user.email !== currentUser.email) && // bukan diri sendiri
-        !user.isOperator && // bukan operator
-        !friends.some(friend => friend.email === user.email) && // belum menjadi teman
-        (user.name && user.name.toLowerCase().includes(searchTerm) || 
-         user.email && user.email.toLowerCase().includes(searchTerm))
-    );
-    
-    if (filteredUsers.length === 0) {
-        searchResults.innerHTML = '<p style="text-align: center; color: #a0a0a0; font-size: 14px; padding: 10px;">Tidak ada hasil ditemukan</p>';
-        return;
-    }
-    
-    displayUserResults(filteredUsers);
-}
-
-// Fungsi untuk menambahkan teman
-function addFriend(userEmail) {
-    // Cari data pengguna dari allUsers
-    const userToAdd = allUsers.find(user => user.email === userEmail);
-    
-    if (!userToAdd) {
-        alert('Pengguna tidak ditemukan!');
-        return;
-    }
-    
-    // Cek apakah sudah menjadi teman
-    const isAlreadyFriend = friends.some(friend => friend.email === userEmail);
-    
-    if (isAlreadyFriend) {
-        alert(`${userToAdd.name || userToAdd.email} sudah menjadi teman Anda!`);
-        return;
-    }
-    
-    // Tambahkan ke daftar teman
-    friends.push({
-        id: userToAdd.id || Date.now().toString(),
-        name: userToAdd.name || userToAdd.email,
-        email: userToAdd.email,
-        img: userToAdd.img || DEFAULT_PROFILE_IMG,
-        online: Math.random() > 0.5,
-        addedAt: new Date().toISOString()
-    });
-    
-    saveFriends();
-    
-    // Refresh tampilan pencarian
-    searchFriends();
-    
-    // Refresh daftar teman
-    displayFriends();
-    
-    alert(`${userToAdd.name || userToAdd.email} telah ditambahkan sebagai teman!`);
-    
-    // Buat chat dengan teman baru
-    const friendChatId = [currentUser.email, userEmail].sort().join('_');
-    if (!friendChats[friendChatId]) {
-        friendChats[friendChatId] = {
-            participants: [currentUser.email, userEmail],
-            messages: [{
-                id: Date.now(),
-                sender: userEmail,
-                text: `Halo! Saya ${userToAdd.name || userToAdd.email}. Senang bertemu dengan Anda!`,
-                timestamp: new Date().toISOString(),
-                read: false
-            }]
-        };
-        saveFriendChats();
-    }
-}
-
-// Fungsi logout
-function logout() {
-    currentUser = {}; // Hapus data pengguna saat ini
-    localStorage.removeItem(USER_STORAGE_KEY); // Hapus data dari localStorage
-    showWelcomeScreen(); // Kembali ke halaman awal
-    alert("Anda telah logout.");
-}
-
-
-
-
-
-// Di bagian awal script, setelah deklarasi kunci localStorage
-// Hapus data pengguna yang sudah ada untuk memulai dari awal
-localStorage.removeItem(USER_STORAGE_KEY);
-localStorage.removeItem(USERS_STORAGE_KEY);
-localStorage.removeItem(FRIENDS_STORAGE_KEY);
-localStorage.removeItem(FRIEND_CHATS_STORAGE_KEY);
-localStorage.removeItem(POSTS_STORAGE_KEY);
-
-
-
 
 // BARU: Fungsi untuk memuat semua pengguna
 function loadAllUsers() {
@@ -164,7 +86,7 @@ function loadAllUsers() {
             email: 'operator@xcxavier.com',
             img: OPERATOR_IMG,
             isOperator: true,
-            password: 'operator123' // Password default untuk operator
+            password: 'operator123'
         });
         localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
     }
@@ -172,10 +94,1885 @@ function loadAllUsers() {
     return users;
 }
 
+// BARU: Fungsi untuk menyimpan semua pengguna
+function saveAllUsers() {
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(allUsers));
+}
 
+// BARU: Fungsi untuk memuat data chat dengan operator
+function loadChats() {
+    const storedChats = localStorage.getItem(CHATS_STORAGE_KEY);
+    return storedChats ? JSON.parse(storedChats) : {};
+}
 
+// BARU: Fungsi untuk menyimpan data chat dengan operator
+function saveChats() {
+    localStorage.setItem(CHATS_STORAGE_KEY, JSON.stringify(chats));
+}
 
+// BARU: Fungsi untuk memuat data chat dengan teman
+function loadFriendChats() {
+    const storedChats = localStorage.getItem(FRIEND_CHATS_STORAGE_KEY);
+    return storedChats ? JSON.parse(storedChats) : {};
+}
 
+// BARU: Fungsi untuk menyimpan data chat dengan teman
+function saveFriendChats() {
+    localStorage.setItem(FRIEND_CHATS_STORAGE_KEY, JSON.stringify(friendChats));
+}
+
+// BARU: Fungsi untuk memuat postingan
+function loadPosts() {
+    const storedPosts = localStorage.getItem(POSTS_STORAGE_KEY);
+    return storedPosts ? JSON.parse(storedPosts) : [];
+}
+
+// BARU: Fungsi untuk menyimpan postingan
+function savePosts() {
+    localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(posts));
+}
+
+// PERUBAHAN: Fungsi untuk memuat settings
+function loadSettings() {
+    const storedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (storedSettings) {
+        return JSON.parse(storedSettings);
+    } else {
+        // Default settings
+        return {
+            darkMode: true,
+            notifications: {
+                posts: true,
+                messages: true,
+                friends: true
+            },
+            privacy: {
+                publicProfile: true,
+                onlineStatus: true,
+                directMessages: true
+            },
+            language: 'id'
+        };
+    }
+}
+
+// PERUBAHAN: Fungsi untuk menyimpan settings
+function saveSettings() {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(appSettings));
+}
+
+// BARU: Fungsi untuk memuat data permintaan pertemanan
+function loadFriendRequests() {
+    const storedRequests = localStorage.getItem(FRIEND_REQUESTS_KEY);
+    return storedRequests ? JSON.parse(storedRequests) : {};
+}
+
+// BARU: Fungsi untuk memuat postingan yang disukai
+function loadLikedPosts() {
+    const storedLikedPosts = localStorage.getItem(LIKED_POSTS_KEY);
+    return storedLikedPosts ? JSON.parse(storedLikedPosts) : {};
+}
+
+// BARU: Fungsi untuk menyimpan postingan yang disukai
+function saveLikedPosts() {
+    localStorage.setItem(LIKED_POSTS_KEY, JSON.stringify(likedPosts));
+}
+
+// BARU: Fungsi untuk memuat riwayat pencarian
+function loadSearchHistory() {
+    const storedHistory = localStorage.getItem(SEARCH_HISTORY_KEY);
+    return storedHistory ? JSON.parse(storedHistory) : [];
+}
+
+// BARU: Fungsi untuk menyimpan riwayat pencarian
+function saveSearchHistory() {
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(searchHistory));
+}
+
+// BARU: Fungsi untuk memuat daftar teman - DIPERBAIKI
+function loadFriends() {
+    const storedFriends = localStorage.getItem(FRIENDS_STORAGE_KEY);
+    let friendsList = storedFriends ? JSON.parse(storedFriends) : [];
+    
+    // Pastikan setiap teman memiliki properti yang diperlukan
+    friendsList = friendsList.map(friend => ({
+        id: friend.id || Date.now().toString(),
+        name: friend.name || 'Teman',
+        email: friend.email || '',
+        img: friend.img || DEFAULT_PROFILE_IMG,
+        online: friend.online !== undefined ? friend.online : Math.random() > 0.5,
+        addedAt: friend.addedAt || new Date().toISOString()
+    }));
+    
+    return friendsList;
+}
+
+// BARU: Fungsi untuk menyimpan daftar teman - DIPERBAIKI
+function saveFriends() {
+    localStorage.setItem(FRIENDS_STORAGE_KEY, JSON.stringify(friends));
+}
+
+// BARU: Fungsi untuk menyembunyikan semua layar
+function hideAllScreens() {
+    document.getElementById('welcome-screen').style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('forgot-screen').style.display = 'none';
+    document.getElementById('profile-setup-screen').style.display = 'none';
+    document.getElementById('home-screen').style.display = 'none';
+    document.getElementById('profile-page').style.display = 'none';
+    document.getElementById('settings-page').style.display = 'none';
+    document.getElementById('messages-page').style.display = 'none';
+    document.getElementById('upload-page').style.display = 'none';
+    document.getElementById('user-profile-page').style.display = 'none';
+    document.getElementById('chat-page').style.display = 'none';
+    document.getElementById('friend-chat-page').style.display = 'none';
+    document.getElementById('error-screen').style.display = 'none';
+    
+    // Atur ulang centering body untuk auth screens
+    document.body.style.display = 'flex';
+    document.body.style.alignItems = 'center';
+    document.body.style.justifyContent = 'center';
+    document.body.style.padding = '0';
+}
+
+// BARU: Fungsi untuk menampilkan halaman awal
+function showWelcomeScreen() {
+    hideAllScreens();
+    document.getElementById('welcome-screen').style.display = 'block';
+    
+    // Reset form pendaftaran dan login
+    document.getElementById('reg_email').value = '';
+    document.getElementById('reg_password').value = '';
+    document.getElementById('log_email').value = '';
+    document.getElementById('log_password').value = '';
+    document.getElementById('forgot_email').value = '';
+    
+    // Reset body styling
+    document.body.style.display = 'flex';
+    document.body.style.justifyContent = 'center';
+    document.body.style.alignItems = 'center';
+    document.body.style.minHeight = '100vh';
+    document.body.style.padding = '20px';
+}
+
+// BARU: Fungsi untuk menampilkan halaman error koneksi
+function showErrorScreen() {
+    hideAllScreens();
+    document.getElementById('error-screen').style.display = 'block';
+}
+
+// BARU: Fungsi untuk memeriksa koneksi internet
+function checkConnection() {
+    isOnline = navigator.onLine;
+    
+    if (isOnline) {
+        // Jika koneksi tersedia, kembali ke halaman sebelumnya
+        if (currentUser && currentUser.email) {
+            showHome();
+        } else {
+            showWelcomeScreen();
+        }
+    } else {
+        // Jika masih offline, perbarui status
+        document.getElementById('connection-status').textContent = 'NON KONEKSI';
+        alert('Masih tidak dapat terhubung ke internet. Periksa koneksi Anda.');
+    }
+}
+
+// BARU: Event listener untuk perubahan status koneksi
+window.addEventListener('online', function() {
+    isOnline = true;
+    // Jika sedang di halaman error, sembunyikan
+    if (document.getElementById('error-screen').style.display === 'block') {
+        checkConnection();
+    }
+});
+
+window.addEventListener('offline', function() {
+    isOnline = false;
+    // Tampilkan halaman error jika sedang di aplikasi
+    if (document.getElementById('welcome-screen').style.display !== 'block' && 
+        document.getElementById('auth-screen').style.display !== 'block' &&
+        document.getElementById('login-screen').style.display !== 'block' &&
+        document.getElementById('forgot-screen').style.display !== 'block' &&
+        document.getElementById('profile-setup-screen').style.display !== 'block') {
+        showErrorScreen();
+    }
+});
+
+// Fungsi untuk menampilkan layar otentikasi tertentu
+function showRegister() { 
+    if (!isOnline) {
+        showErrorScreen();
+        return;
+    }
+    hideAllScreens(); 
+    document.getElementById('auth-screen').style.display = 'block'; 
+}
+
+function showLogin() { 
+    if (!isOnline) {
+        showErrorScreen();
+        return;
+    }
+    hideAllScreens(); 
+    document.getElementById('login-screen').style.display = 'block'; 
+}
+
+function showForgotPassword() { 
+    if (!isOnline) {
+        showErrorScreen();
+        return;
+    }
+    hideAllScreens(); 
+    document.getElementById('forgot-screen').style.display = 'block'; 
+}
+
+// Fungsi untuk menampilkan layar Setup Profil
+function showProfileSetup() {
+    if (!isOnline) {
+        showErrorScreen();
+        return;
+    }
+     hideAllScreens();
+     document.getElementById('profile-setup-screen').style.display = 'block';
+     document.getElementById('upload-warning').style.display = 'none';
+}
+
+// PERUBAHAN: Fungsi untuk menampilkan halaman profil
+function showProfilePage() {
+    if (!isOnline) {
+        showErrorScreen();
+        return;
+    }
+    hideAllScreens();
+    document.getElementById('profile-page').style.display = 'block';
+    
+    // Update data di halaman profil
+    document.getElementById('profile-page-name').textContent = currentUser.name;
+    document.getElementById('profile-page-pic').src = currentUser.img;
+    document.getElementById('edit-profile-name').value = currentUser.name;
+    
+    // Sensor email untuk keamanan
+    if (currentUser.email) {
+        const emailParts = currentUser.email.split('@');
+        const username = emailParts[0].substring(0, 2) + '••••••' + emailParts[0].substring(emailParts[0].length - 2);
+        const domain = '•••••.com';
+        document.getElementById('profile-page-email').textContent = username + '@' + domain;
+    }
+}
+
+// PERUBAHAN: Fungsi untuk menampilkan halaman setting
+function showSettingsPage() {
+    if (!isOnline) {
+        showErrorScreen();
+        return;
+    }
+    hideAllScreens();
+    document.getElementById('settings-page').style.display = 'block';
+    
+    // Update semua toggle di settings
+    updateSettingsUI();
+}
+
+// BARU: Fungsi untuk menampilkan halaman pesan/notifikasi - HANYA UNTUK OPERATOR
+function showMessagesPage() {
+    if (!isOnline) {
+        showErrorScreen();
+        return;
+    }
+    hideAllScreens();
+    document.getElementById('messages-page').style.display = 'flex';
+    
+    // Update navigasi bawah
+    updateBottomNav('messages');
+    
+    // Tampilkan daftar pesan HANYA dari operator
+    displayOperatorMessages();
+}
+
+// BARU: Fungsi untuk menampilkan daftar pesan HANYA dari operator
+function displayOperatorMessages() {
+    const messageList = document.getElementById('message-list');
+    
+    // Generate chat ID untuk operator
+    const operatorChatId = [currentUser.email, 'operator@xcxavier.com'].sort().join('_');
+    
+    // Dapatkan chat dengan operator
+    const operatorChat = chats[operatorChatId];
+    
+    let messagesHTML = '';
+    
+    // Tambahkan pesan dari operator
+    if (operatorChat && operatorChat.messages.length > 0) {
+        const lastMessage = operatorChat.messages[operatorChat.messages.length - 1];
+        const unreadCount = operatorChat.messages.filter(m => !m.read && m.sender !== currentUser.email).length;
+        
+        messagesHTML += `
+            <div class="message-item ${unreadCount > 0 ? 'unread' : ''}" onclick="openOperatorChat()">
+                <img src="${OPERATOR_IMG}" alt="Operator" class="message-avatar">
+                <div class="message-info">
+                    <div class="message-sender">🤖 Operator XC Xavier</div>
+                    <div class="message-preview">${lastMessage.text || '[Media]'}</div>
+                    <div class="message-time">${formatTime(lastMessage.timestamp)}</div>
+                </div>
+                ${unreadCount > 0 ? `<div class="message-badge">${unreadCount}</div>` : ''}
+            </div>
+        `;
+    } else {
+        // Jika belum ada chat dengan operator, buat pesan default
+        messagesHTML += `
+            <div class="message-item unread" onclick="openOperatorChat()">
+                <img src="${OPERATOR_IMG}" alt="Operator" class="message-avatar">
+                <div class="message-info">
+                    <div class="message-sender">🤖 Operator XC Xavier</div>
+                    <div class="message-preview">Selamat datang di XC Xavier! Klik untuk memulai percakapan.</div>
+                    <div class="message-time">Baru</div>
+                </div>
+                <div class="message-badge">1</div>
+            </div>
+        `;
+        
+        // Buat chat dengan operator jika belum ada
+        if (!chats[operatorChatId]) {
+            chats[operatorChatId] = {
+                participants: [currentUser.email, 'operator@xcxavier.com'],
+                messages: [{
+                    id: Date.now(),
+                    sender: 'operator@xcxavier.com',
+                    text: 'Selamat Datang Di XC Xavier Chatting! 🎉\n\nHalo! Saya Operator XC Xavier. Senang bertemu dengan Anda!',
+                    timestamp: new Date().toISOString(),
+                    read: false
+                }]
+            };
+            saveChats();
+        }
+    }
+    
+    messageList.innerHTML = messagesHTML;
+}
+
+// BARU: Fungsi untuk memformat waktu
+function formatTime(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) {
+        return 'Baru saja';
+    } else if (diffMins < 60) {
+        return `${diffMins} menit lalu`;
+    } else if (diffHours < 24) {
+        return `${diffHours} jam lalu`;
+    } else if (diffDays === 1) {
+        return 'Kemarin';
+    } else {
+        return `${diffDays} hari lalu`;
+    }
+}
+
+// BARU: Fungsi untuk membuka chat dengan operator
+function openOperatorChat() {
+    if (!isOnline) {
+        showErrorScreen();
+        return;
+    }
+    hideAllScreens();
+    document.getElementById('chat-page').style.display = 'flex';
+    
+    // Set currentChatUser ke operator
+    currentChatUser = {
+        id: 'operator',
+        name: '🤖 Operator XC Xavier',
+        email: 'operator@xcxavier.com',
+        img: OPERATOR_IMG,
+        status: 'Online'
+    };
+    
+    // Generate chat ID
+    currentChatId = [currentUser.email, currentChatUser.email].sort().join('_');
+    
+    // Jika chat belum ada, buat chat baru
+    if (!chats[currentChatId]) {
+        chats[currentChatId] = {
+            participants: [currentUser.email, currentChatUser.email],
+            messages: [{
+                id: Date.now(),
+                sender: 'operator@xcxavier.com',
+                text: 'Selamat Datang Di XC Xavier Chatting! 🎉\n\nHalo! Saya Operator XC Xavier. Senang bertemu dengan Anda!',
+                timestamp: new Date().toISOString(),
+                read: false
+            }]
+        };
+        saveChats();
+    }
+    
+    // Update header chat
+    document.getElementById('chat-profile-name').textContent = currentChatUser.name;
+    document.getElementById('chat-profile-pic').src = currentChatUser.img;
+    document.getElementById('chat-status').textContent = currentChatUser.status;
+    
+    // Tandai pesan sebagai dibaca
+    markMessagesAsRead();
+    
+    // Tampilkan pesan
+    displayChatMessages();
+    
+    // Fokus ke input chat
+    document.getElementById('chat-input').focus();
+}
+
+// BARU: Fungsi untuk membuka chat dengan teman
+function openFriendChat(friendEmail) {
+    if (!isOnline) {
+        showErrorScreen();
+        return;
+    }
+    hideAllScreens();
+    document.getElementById('friend-chat-page').style.display = 'flex';
+    
+    // Cari data teman
+    const friend = friends.find(f => f.email === friendEmail);
+    if (!friend) {
+        alert('Teman tidak ditemukan!');
+        showHome();
+        return;
+    }
+    
+    currentFriendChatUser = friend;
+    
+    // Generate chat ID
+    currentFriendChatId = [currentUser.email, currentFriendChatUser.email].sort().join('_');
+    
+    // Jika chat belum ada, buat chat baru
+    if (!friendChats[currentFriendChatId]) {
+        friendChats[currentFriendChatId] = {
+            participants: [currentUser.email, currentFriendChatUser.email],
+            messages: []
+        };
+        saveFriendChats();
+    }
+    
+    // Update header chat
+    document.getElementById('friend-chat-profile-name').textContent = currentFriendChatUser.name;
+    document.getElementById('friend-chat-profile-pic').src = currentFriendChatUser.img || DEFAULT_PROFILE_IMG;
+    document.getElementById('friend-chat-status').textContent = currentFriendChatUser.online ? 'Online' : 'Offline';
+    
+    // Tampilkan pesan
+    displayFriendChatMessages();
+    
+    // Fokus ke input chat
+    document.getElementById('friend-chat-input').focus();
+}
+
+// BARU: Fungsi untuk menampilkan pesan di chat dengan teman
+function displayFriendChatMessages() {
+    const chatContent = document.getElementById('friend-chat-content');
+    const chatData = friendChats[currentFriendChatId];
+    
+    if (!chatData || chatData.messages.length === 0) {
+        chatContent.innerHTML = '<p style="text-align: center; color: #a0a0a0; margin-top: 20px;">Belum ada pesan. Mulai percakapan!</p>';
+        return;
+    }
+    
+    let messagesHTML = '';
+    
+    chatData.messages.forEach(message => {
+        const isSent = message.sender === currentUser.email;
+        const messageTime = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        messagesHTML += `
+            <div class="friend-message ${isSent ? 'sent' : 'received'}">
+                <div>${message.text || ''}</div>
+                <div class="friend-message-time">${messageTime}</div>
+            </div>
+        `;
+    });
+    
+    chatContent.innerHTML = messagesHTML;
+    
+    // Scroll ke bawah
+    chatContent.scrollTop = chatContent.scrollHeight;
+}
+
+// BARU: Fungsi untuk mengirim pesan ke teman
+function sendFriendMessage() {
+    const chatInput = document.getElementById('friend-chat-input');
+    const messageText = chatInput.value.trim();
+    
+    if (!messageText) return;
+    
+    // Tambahkan pesan ke chat
+    const newMessage = {
+        id: Date.now(),
+        sender: currentUser.email,
+        text: messageText,
+        timestamp: new Date().toISOString(),
+        read: true
+    };
+    
+    friendChats[currentFriendChatId].messages.push(newMessage);
+    saveFriendChats();
+    
+    // Reset input
+    chatInput.value = '';
+    
+    // Tampilkan pesan baru
+    displayFriendChatMessages();
+}
+
+// BARU: Fungsi untuk menandai pesan sebagai dibaca
+function markMessagesAsRead() {
+    if (!chats[currentChatId]) return;
+    
+    chats[currentChatId].messages.forEach(message => {
+        if (message.sender !== currentUser.email) {
+            message.read = true;
+        }
+    });
+    
+    saveChats();
+}
+
+// BARU: Fungsi untuk menampilkan pesan di chat dengan operator
+function displayChatMessages() {
+    const chatContent = document.getElementById('chat-content');
+    const chatData = chats[currentChatId];
+    
+    if (!chatData || chatData.messages.length === 0) {
+        chatContent.innerHTML = '<p style="text-align: center; color: #a0a0a0; margin-top: 20px;">Belum ada pesan. Mulai percakapan!</p>';
+        return;
+    }
+    
+    let messagesHTML = '';
+    
+    chatData.messages.forEach(message => {
+        const isSent = message.sender === currentUser.email;
+        const messageTime = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        messagesHTML += `
+            <div class="message ${isSent ? 'sent' : 'received'}">
+                <div>${message.text || ''}</div>
+                <div class="message-time">${messageTime}</div>
+            </div>
+        `;
+    });
+    
+    chatContent.innerHTML = messagesHTML;
+    
+    // Scroll ke bawah
+    chatContent.scrollTop = chatContent.scrollHeight;
+}
+
+// BARU: Fungsi untuk mengirim pesan ke operator
+function sendMessage() {
+    const chatInput = document.getElementById('chat-input');
+    const messageText = chatInput.value.trim();
+    
+    if (!messageText) return;
+    
+    // Tambahkan pesan ke chat
+    const newMessage = {
+        id: Date.now(),
+        sender: currentUser.email,
+        text: messageText,
+        timestamp: new Date().toISOString(),
+        read: true
+    };
+    
+    chats[currentChatId].messages.push(newMessage);
+    saveChats();
+    
+    // Reset input
+    chatInput.value = '';
+    
+    // Tampilkan pesan baru
+    displayChatMessages();
+    
+    // Jika chat dengan operator, kirim balasan otomatis
+    if (currentChatUser.email === 'operator@xcxavier.com') {
+        setTimeout(() => {
+            const replies = [
+                "Terima kasih sudah menghubungi! Ada yang bisa saya bantu?",
+                "Senang mendengar dari Anda!",
+                "Pesan Anda sudah diterima. Tim kami akan segera merespon.",
+                "Terima kasih sudah menggunakan XC Xavier!",
+                "Ada pertanyaan lain? Jangan ragu untuk bertanya!"
+            ];
+            
+            const randomReply = replies[Math.floor(Math.random() * replies.length)];
+            
+            const replyMessage = {
+                id: Date.now(),
+                sender: currentChatUser.email,
+                text: randomReply,
+                timestamp: new Date().toISOString(),
+                read: false
+            };
+            
+            chats[currentChatId].messages.push(replyMessage);
+            saveChats();
+            displayChatMessages();
+        }, 1000 + Math.random() * 2000);
+    }
+}
+
+// BARU: Fungsi untuk menampilkan halaman profil pengguna
+function showUserProfilePage() {
+    if (!isOnline) {
+        showErrorScreen();
+        return;
+    }
+    hideAllScreens();
+    document.getElementById('user-profile-page').style.display = 'block';
+    
+    // Set currentProfileUser ke currentUser (profil sendiri)
+    currentProfileUser = currentUser;
+    
+    // Update data profil
+    updateProfilePage();
+    
+    // Update navigasi bawah
+    updateBottomNav('profile');
+}
+
+// BARU: Fungsi untuk memperbarui halaman profil
+function updateProfilePage() {
+    if (!currentProfileUser) return;
+    
+    document.getElementById('user-profile-page-name').textContent = currentProfileUser.name;
+    document.getElementById('user-profile-page-pic').src = currentProfileUser.img || DEFAULT_PROFILE_IMG;
+    document.getElementById('user-profile-page-username').textContent = '@' + (currentProfileUser.username || currentProfileUser.name.toLowerCase().replace(/\s+/g, ''));
+    
+    // Hitung statistik
+    const userPosts = posts.filter(post => post.userId === currentProfileUser.email || post.userId === currentProfileUser.id);
+    document.getElementById('posts-count').textContent = userPosts.length;
+    
+    // Hitung followers dan following (sementara, bisa dikembangkan)
+    const userFollowers = 0; // Akan diimplementasikan nanti
+    const userFollowing = 0; // Akan diimplementasikan nanti
+    
+    document.getElementById('followers-count').textContent = userFollowers;
+    document.getElementById('following-count').textContent = userFollowing;
+    
+    // Update tombol berdasarkan apakah ini profil sendiri atau profil orang lain
+    updateProfileActions();
+    
+    // Tampilkan postingan
+    displayUserPosts();
+}
+
+// BARU: Fungsi untuk memperbarui tombol aksi di profil
+function updateProfileActions() {
+    const profileActions = document.getElementById('profile-actions');
+    
+    // Cek apakah ini profil sendiri
+    const isOwnProfile = currentProfileUser.email === currentUser.email || currentProfileUser.id === currentUser.id;
+    
+    if (isOwnProfile) {
+        // Ini adalah profil sendiri, tampilkan tombol edit
+        profileActions.innerHTML = `
+            <div class="action-button message-button" onclick="showEditProfile()">
+                Edit Profil
+            </div>
+        `;
+    } else {
+        // Ini adalah profil orang lain, tampilkan tombol Follow dan Kirim Pesan
+        profileActions.innerHTML = `
+            <div class="action-button follow-button" id="follow-button" onclick="toggleFollow()">Follow</div>
+            <div class="action-button message-button" onclick="openFriendChat('${currentProfileUser.email}')">Kirim Pesan</div>
+        `;
+    }
+}
+
+// BARU: Fungsi untuk mengganti tab di profil
+function switchProfileTab(tab) {
+    currentProfileTab = tab;
+    
+    // Update tampilan tab
+    const tabs = document.querySelectorAll('.profile-tab');
+    tabs.forEach(tabElement => {
+        tabElement.classList.remove('active');
+    });
+    
+    event.target.classList.add('active');
+    
+    // Tampilkan konten sesuai tab
+    displayUserPosts();
+}
+
+// BARU: Fungsi untuk menampilkan postingan di halaman profil
+function displayUserPosts() {
+    const postsContainer = document.getElementById('profile-posts-container');
+    let userPosts = [];
+    
+    if (currentProfileTab === 'posts') {
+        // Tampilkan postingan user
+        userPosts = posts.filter(post => 
+            post.userId === currentProfileUser.email || post.userId === currentProfileUser.id
+        );
+    } else if (currentProfileTab === 'liked') {
+        // Tampilkan postingan yang disukai
+        const likedPostIds = likedPosts[currentUser.email] || [];
+        userPosts = posts.filter(post => likedPostIds.includes(post.id));
+    }
+    
+    if (userPosts.length === 0) {
+        let message = '';
+        if (currentProfileTab === 'posts') {
+            message = 'Belum ada postingan';
+        } else if (currentProfileTab === 'liked') {
+            message = 'Belum ada postingan yang disukai';
+        }
+        
+        postsContainer.innerHTML = `
+            <div class="no-posts">
+                <p>${message}</p>
+                ${currentProfileUser.email === currentUser.email || currentProfileUser.id === currentUser.id ? 
+                    '<button class="camera-btn" onclick="showUploadPage()" style="margin-top: 15px;">Buat Postingan Pertama</button>' : 
+                    ''}
+            </div>
+        `;
+        return;
+    }
+    
+    let postsHTML = '';
+    
+    userPosts.forEach(post => {
+        if (post.type === 'photo') {
+            postsHTML += `
+                <div class="profile-post" onclick="openPost(${post.id})">
+                    <img src="${post.media}" alt="Postingan gambar">
+                </div>
+            `;
+        } else if (post.type === 'video') {
+            postsHTML += `
+                <div class="profile-post" onclick="openPost(${post.id})">
+                    <video src="${post.media}" muted></video>
+                </div>
+            `;
+        } else if (post.type === 'text') {
+            postsHTML += `
+                <div class="profile-post profile-post-text" onclick="openPost(${post.id})">
+                    ${post.description || post.media.substring(0, 100) + '...'}
+                </div>
+            `;
+        }
+    });
+    
+    postsContainer.innerHTML = postsHTML;
+}
+
+// BARU: Fungsi untuk membuka postingan
+function openPost(postId) {
+    alert('Membuka postingan dengan ID: ' + postId);
+}
+
+// ==============================================
+// SISTEM UPLOAD KAMERA SEPERTI TIKTOK (DIUBAH)
+// ==============================================
+
+// BARU: Fungsi untuk menampilkan halaman upload kamera
+function showUploadPage() {
+    if (!isOnline) {
+        showErrorScreen();
+        return;
+    }
+    
+    hideAllScreens();
+    document.getElementById('upload-page').style.display = 'flex';
+    
+    // Reset ke mode foto
+    switchMode('photo');
+    
+    // Start camera
+    startCamera();
+    
+    // Update navigasi bawah
+    updateBottomNav('upload');
+}
+
+// BARU: Fungsi untuk menutup halaman upload
+function closeUploadPage() {
+    // Stop camera
+    stopCamera();
+    
+    // Kembali ke home
+    showHome();
+}
+
+// BARU: Fungsi untuk mengganti mode (foto/video)
+function switchMode(mode) {
+    currentMode = mode;
+    
+    // Update tombol mode
+    document.getElementById('photo-mode-btn').classList.toggle('active', mode === 'photo');
+    document.getElementById('video-mode-btn').classList.toggle('active', mode === 'video');
+    
+    // Update tombol shutter
+    const shutterBtn = document.getElementById('shutter-btn');
+    if (mode === 'photo') {
+        shutterBtn.innerHTML = '<span style="font-size: 24px;">📸</span>';
+        shutterBtn.classList.remove('recording');
+        shutterBtn.disabled = false;
+    } else {
+        shutterBtn.innerHTML = '<span style="font-size: 24px;">⏺️</span>';
+        shutterBtn.classList.remove('recording');
+        shutterBtn.disabled = false;
+    }
+    
+    // Sembunyikan timer recording jika ada
+    document.getElementById('recording-timer').style.display = 'none';
+    
+    // Reset recording state
+    isRecording = false;
+    recordedChunks = [];
+    
+    // Stop recording jika sedang merekam
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+    }
+}
+
+// BARU: Fungsi untuk memulai kamera - DIPERBAIKI DENGAN HANDLING PERMISSION
+async function startCamera() {
+    try {
+        // Hentikan stream yang ada
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+        }
+        
+        // Cek apakah kamera sudah diizinkan
+        const cameraPermission = await navigator.permissions.query({ name: 'camera' });
+        
+        if (cameraPermission.state === 'denied') {
+            // Jika izin ditolak, tampilkan pesan dan minta pengguna ke pengaturan
+            showCameraPermissionMessage();
+            return;
+        }
+        
+        // Dapatkan akses kamera
+        const constraints = {
+            video: {
+                facingMode: 'user', // Kamera depan
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            },
+            audio: currentMode === 'video' // Hanya minta audio untuk mode video
+        };
+        
+        currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        // Tampilkan preview kamera
+        const preview = document.getElementById('camera-preview');
+        preview.srcObject = currentStream;
+        
+        // Siapkan MediaRecorder untuk mode video
+        if (currentMode === 'video') {
+            mediaRecorder = new MediaRecorder(currentStream);
+            
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                }
+            };
+            
+            mediaRecorder.onstop = () => {
+                // Buat blob dari chunks
+                const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+                currentMediaURL = URL.createObjectURL(blob);
+                currentMediaType = 'video';
+                
+                // Tampilkan preview video
+                showMediaPreview();
+            };
+        }
+        
+    } catch (error) {
+        console.error('Error mengakses kamera:', error);
+        
+        // Tampilkan pesan error
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+            // Izin kamera ditolak
+            showCameraPermissionMessage();
+        } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+            // Kamera tidak ditemukan
+            alert('Kamera tidak ditemukan di perangkat Anda.');
+        } else {
+            alert('Tidak dapat mengakses kamera. Error: ' + error.message);
+        }
+        
+        // Fallback: tampilkan gambar placeholder
+        const preview = document.getElementById('camera-preview');
+        preview.srcObject = null;
+        preview.style.background = '#000';
+    }
+}
+
+// BARU: Fungsi untuk menampilkan pesan izin kamera
+function showCameraPermissionMessage() {
+    // Tampilkan pesan yang mengarahkan pengguna ke pengaturan
+    const permissionMessage = document.createElement('div');
+    permissionMessage.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+        z-index: 100;
+        max-width: 80%;
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    `;
+    
+    permissionMessage.innerHTML = `
+        <h3 style="margin-bottom: 15px; color: #ff6b6b;">⚠️ Akses Kamera Ditolak</h3>
+        <p style="margin-bottom: 15px;">Aplikasi XC Xavier membutuhkan akses kamera untuk mengambil foto dan video.</p>
+        <p style="margin-bottom: 20px; font-size: 14px; color: #ccc;">Untuk mengizinkan akses kamera:</p>
+        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
+            <p style="margin-bottom: 8px; font-size: 14px;">1. Buka <strong>Pengaturan</strong> perangkat Anda</p>
+            <p style="margin-bottom: 8px; font-size: 14px;">2. Cari <strong>Aplikasi</strong> atau <strong>Izin Aplikasi</strong></p>
+            <p style="margin-bottom: 8px; font-size: 14px;">3. Temukan <strong>XC Xavier</strong></p>
+            <p style="font-size: 14px;">4. Aktifkan izin <strong>Kamera</strong></p>
+        </div>
+        <p style="margin-bottom: 20px; font-size: 14px; color: #ccc;">Setelah mengizinkan, kembali ke aplikasi dan coba lagi.</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button onclick="this.parentElement.parentElement.remove(); startCamera();" style="padding: 12px 24px; background: var(--accent-purple); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Coba Lagi</button>
+            <button onclick="this.parentElement.parentElement.remove(); closeUploadPage();" style="padding: 12px 24px; background: rgba(255,255,255,0.1); color: white; border: 1px solid white; border-radius: 8px; cursor: pointer; font-weight: 600;">Batal</button>
+        </div>
+    `;
+    
+    document.querySelector('.camera-container').appendChild(permissionMessage);
+}
+
+// BARU: Fungsi untuk menghentikan kamera
+function stopCamera() {
+    if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+    }
+    
+    // Stop recording jika sedang merekam
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        clearInterval(recordingTimer);
+    }
+}
+
+// BARU: Fungsi untuk mengambil foto atau merekam video
+function captureMedia() {
+    if (currentMode === 'photo') {
+        capturePhoto();
+    } else {
+        if (isRecording) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    }
+}
+
+// BARU: Fungsi untuk mengambil foto
+function capturePhoto() {
+    const preview = document.getElementById('camera-preview');
+    const canvas = document.getElementById('photo-canvas');
+    const context = canvas.getContext('2d');
+    
+    // Pastikan kamera berjalan
+    if (!currentStream) {
+        alert('Kamera tidak tersedia. Pastikan kamera diizinkan dan berfungsi.');
+        return;
+    }
+    
+    // Atur ukuran canvas sesuai dengan video
+    canvas.width = preview.videoWidth;
+    canvas.height = preview.videoHeight;
+    
+    // Gambar frame video ke canvas (dibalik untuk kamera depan)
+    context.translate(canvas.width, 0);
+    context.scale(-1, 1);
+    
+    context.drawImage(preview, 0, 0, canvas.width, canvas.height);
+    
+    // Reset transformasi
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    
+    // Konversi canvas ke data URL
+    currentMediaURL = canvas.toDataURL('image/jpeg');
+    currentMediaType = 'photo';
+    
+    // Tampilkan preview foto
+    showMediaPreview();
+}
+
+// BARU: Fungsi untuk mulai merekam video
+function startRecording() {
+    if (!mediaRecorder) return;
+    
+    // Reset chunks
+    recordedChunks = [];
+    
+    // Mulai recording
+    mediaRecorder.start();
+    isRecording = true;
+    
+    // Update tombol shutter
+    const shutterBtn = document.getElementById('shutter-btn');
+    shutterBtn.innerHTML = '<span style="font-size: 24px;">⏹️</span>';
+    shutterBtn.classList.add('recording');
+    
+    // Mulai timer
+    recordingSeconds = 0;
+    document.getElementById('recording-timer').style.display = 'block';
+    updateRecordingTimer();
+    
+    recordingTimer = setInterval(() => {
+        recordingSeconds++;
+        updateRecordingTimer();
+        
+        // Batasi recording maksimal 60 detik
+        if (recordingSeconds >= 60) {
+            stopRecording();
+        }
+    }, 1000);
+}
+
+// BARU: Fungsi untuk menghentikan recording
+function stopRecording() {
+    if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+    
+    // Hentikan recording
+    mediaRecorder.stop();
+    isRecording = false;
+    
+    // Hentikan timer
+    clearInterval(recordingTimer);
+    document.getElementById('recording-timer').style.display = 'none';
+    
+    // Update tombol shutter
+    const shutterBtn = document.getElementById('shutter-btn');
+    shutterBtn.innerHTML = '<span style="font-size: 24px;">⏺️</span>';
+    shutterBtn.classList.remove('recording');
+}
+
+// BARU: Fungsi untuk memperbarui timer recording
+function updateRecordingTimer() {
+    const minutes = Math.floor(recordingSeconds / 60).toString().padStart(2, '0');
+    const seconds = (recordingSeconds % 60).toString().padStart(2, '0');
+    document.getElementById('recording-timer').textContent = `${minutes}:${seconds}`;
+}
+
+// BARU: Fungsi untuk menampilkan preview media yang ditangkap
+function showMediaPreview() {
+    // Sembunyikan camera preview
+    document.querySelector('.camera-container').style.display = 'none';
+    
+    // Tampilkan capture preview
+    const previewContainer = document.getElementById('capture-preview');
+    previewContainer.style.display = 'flex';
+    
+    // Tampilkan media yang sesuai
+    if (currentMediaType === 'photo') {
+        const previewImage = document.getElementById('preview-image');
+        previewImage.src = currentMediaURL;
+        previewImage.style.display = 'block';
+        document.getElementById('preview-video').style.display = 'none';
+    } else {
+        const previewVideo = document.getElementById('preview-video');
+        previewVideo.src = currentMediaURL;
+        previewVideo.style.display = 'block';
+        document.getElementById('preview-image').style.display = 'none';
+    }
+}
+
+// BARU: Fungsi untuk mengambil ulang media
+function retakeMedia() {
+    // Sembunyikan preview
+    document.getElementById('capture-preview').style.display = 'none';
+    
+    // Tampilkan kembali camera preview
+    document.querySelector('.camera-container').style.display = 'block';
+    
+    // Reset media
+    currentMediaURL = null;
+    currentMediaType = null;
+}
+
+// BARU: Fungsi untuk melanjutkan ke form upload
+function proceedToUpload() {
+    // Sembunyikan preview
+    document.getElementById('capture-preview').style.display = 'none';
+    
+    // Tampilkan form upload
+    const uploadForm = document.getElementById('upload-form');
+    uploadForm.style.display = 'flex';
+    
+    // Tampilkan preview di form
+    const formPreview = document.getElementById('form-preview');
+    formPreview.innerHTML = '';
+    
+    if (currentMediaType === 'photo') {
+        const img = document.createElement('img');
+        img.src = currentMediaURL;
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        formPreview.appendChild(img);
+    } else {
+        const video = document.createElement('video');
+        video.src = currentMediaURL;
+        video.controls = true;
+        video.style.width = '100%';
+        video.style.height = '100%';
+        video.style.objectFit = 'cover';
+        formPreview.appendChild(video);
+    }
+    
+    // Reset caption
+    document.getElementById('caption-input').value = '';
+}
+
+// BARU: Fungsi untuk kembali ke preview dari form
+function backToPreview() {
+    // Sembunyikan form
+    document.getElementById('upload-form').style.display = 'none';
+    
+    // Tampilkan preview
+    document.getElementById('capture-preview').style.display = 'flex';
+}
+
+// BARU: Fungsi untuk membuka galeri
+function openGallery() {
+    document.getElementById('gallery-input').click();
+}
+
+// BARU: Event listener untuk input galeri
+document.getElementById('gallery-input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Tentukan tipe file
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    
+    if (!isImage && !isVideo) {
+        alert('Hanya file gambar dan video yang diizinkan!');
+        return;
+    }
+    
+    // Buat URL untuk file
+    currentMediaURL = URL.createObjectURL(file);
+    currentMediaType = isImage ? 'photo' : 'video';
+    
+    // Tampilkan preview
+    showMediaPreview();
+    
+    // Reset input
+    e.target.value = '';
+});
+
+// BARU: Fungsi untuk membatalkan upload
+function cancelUpload() {
+    // Hapus URL media jika ada
+    if (currentMediaURL) {
+        URL.revokeObjectURL(currentMediaURL);
+        currentMediaURL = null;
+        currentMediaType = null;
+    }
+    
+    // Sembunyikan form
+    document.getElementById('upload-form').style.display = 'none';
+    
+    // Tampilkan kamera kembali
+    document.querySelector('.camera-container').style.display = 'block';
+}
+
+// BARU: Fungsi untuk mengunggah postingan
+function uploadPost() {
+    const caption = document.getElementById('caption-input').value.trim();
+    
+    if (!currentMediaURL) {
+        alert('Tidak ada media untuk diunggah!');
+        return;
+    }
+    
+    // Simpan data media (dalam implementasi nyata, ini akan diupload ke server)
+    // Untuk demo, kita simpan sebagai data URL di localStorage
+    
+    // Buat objek postingan baru
+    const newPost = {
+        id: Date.now(),
+        userId: currentUser.email,
+        userName: currentUser.name,
+        userAvatar: currentUser.img,
+        type: currentMediaType,
+        media: currentMediaURL,
+        description: caption,
+        timestamp: new Date().toISOString(),
+        likes: 0,
+        comments: [],
+        views: 0,
+        shares: 0,
+        liked: false,
+        allowComments: document.getElementById('comments-toggle').checked,
+        location: document.getElementById('location-toggle').checked ? 'Lokasi' : null
+    };
+    
+    // Tambahkan ke daftar postingan
+    posts.unshift(newPost);
+    savePosts();
+    
+    // Hapus URL media
+    URL.revokeObjectURL(currentMediaURL);
+    currentMediaURL = null;
+    currentMediaType = null;
+    
+    // Stop kamera
+    stopCamera();
+    
+    // Tampilkan beranda
+    showHome();
+    
+    // Tampilkan pesan sukses
+    alert('Postingan berhasil diunggah!');
+}
+
+// BARU: Fungsi untuk menampilkan postingan di beranda
+function displayPosts() {
+    const postsContainer = document.getElementById('posts-container');
+    
+    if (posts.length === 0) {
+        postsContainer.innerHTML = `
+            <div class="no-posts-message">
+                <p>Belum ada postingan. Jadilah yang pertama membuat konten!</p>
+                <button class="camera-btn" onclick="showUploadPage()" style="margin-top: 15px;">Buat Postingan</button>
+            </div>
+        `;
+        return;
+    }
+    
+    let postsHTML = '';
+    
+    posts.forEach(post => {
+        let mediaHTML = '';
+        
+        if (post.type === 'photo') {
+            mediaHTML = `<img src="${post.media}" alt="Postingan gambar">`;
+        } else if (post.type === 'video') {
+            mediaHTML = `<video src="${post.media}" controls></video>`;
+        } else if (post.type === 'text') {
+            mediaHTML = `<div class="post-text-content">${post.media}</div>`;
+        }
+        
+        // Format waktu posting
+        const postTime = new Date(post.timestamp);
+        const now = new Date();
+        const diffMs = now - postTime;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+        
+        let timeAgo = '';
+        if (diffMins < 1) {
+            timeAgo = 'Baru saja';
+        } else if (diffMins < 60) {
+            timeAgo = `${diffMins} menit lalu`;
+        } else if (diffHours < 24) {
+            timeAgo = `${diffHours} jam lalu`;
+        } else {
+            timeAgo = `${diffDays} hari lalu`;
+        }
+        
+        // Cek apakah post sudah dilike oleh user saat ini
+        const userLikedPosts = likedPosts[currentUser.email] || [];
+        const isLiked = userLikedPosts.includes(post.id);
+        
+        postsHTML += `
+            <div class="post" data-post-id="${post.id}">
+                <div class="post-header">
+                    <img src="${post.userAvatar}" alt="${post.userName}" class="post-user-avatar" onclick="showOtherUserProfile('${post.userId}')">
+                    <div class="post-user-info">
+                        <div class="post-username" onclick="showOtherUserProfile('${post.userId}')">${post.userName}</div>
+                        <div class="post-time">${timeAgo} ${post.location ? '· ' + post.location : ''}</div>
+                    </div>
+                </div>
+                <div class="post-content">
+                    ${post.description ? `<div class="post-text">${post.description}</div>` : ''}
+                    ${mediaHTML ? `<div class="post-media" onclick="openPost(${post.id})">${mediaHTML}</div>` : ''}
+                </div>
+                <div class="post-stats">
+                    <span>${post.views} x dilihat</span>
+                    <span>${post.shares} x dibagikan</span>
+                </div>
+                <div class="post-actions">
+                    <div class="post-action ${isLiked ? 'active' : ''}" onclick="toggleLike(${post.id})">
+                        <div class="post-action-icon">${isLiked ? '❤️' : '🤍'}</div>
+                        <div class="post-action-count">${post.likes}</div>
+                    </div>
+                    <div class="post-action" onclick="toggleComments(${post.id})">
+                        <div class="post-action-icon">💬</div>
+                        <div class="post-action-count">${post.comments.length}</div>
+                    </div>
+                    <div class="post-action" onclick="sharePost(${post.id})">
+                        <div class="post-action-icon">↗️</div>
+                        <div class="post-action-count">Bagikan</div>
+                    </div>
+                </div>
+                <div class="comments-section" id="comments-${post.id}" style="display:none;">
+                    <div class="comment-input">
+                        <input type="text" id="comment-input-${post.id}" placeholder="Tulis komentar...">
+                        <button class="comment-btn" onclick="addComment(${post.id})">Kirim</button>
+                    </div>
+                    <div class="comments-list" id="comments-list-${post.id}">
+                        ${post.comments.map(comment => `
+                            <div class="comment">
+                                <img src="${comment.userAvatar}" alt="${comment.userName}" class="comment-avatar">
+                                <div class="comment-content">
+                                    <div class="comment-user">${comment.userName}</div>
+                                    <div class="comment-text">${comment.text}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    postsContainer.innerHTML = postsHTML;
+}
+
+// BARU: Fungsi untuk toggle like pada postingan
+function toggleLike(postId) {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    
+    // Inisialisasi likedPosts untuk user saat ini jika belum ada
+    if (!likedPosts[currentUser.email]) {
+        likedPosts[currentUser.email] = [];
+    }
+    
+    const userLikedPosts = likedPosts[currentUser.email];
+    const isLiked = userLikedPosts.includes(postId);
+    
+    if (isLiked) {
+        // Unlike post
+        post.likes--;
+        likedPosts[currentUser.email] = userLikedPosts.filter(id => id !== postId);
+    } else {
+        // Like post
+        post.likes++;
+        likedPosts[currentUser.email].push(postId);
+    }
+    
+    savePosts();
+    saveLikedPosts();
+    displayPosts();
+}
+
+// BARU: Fungsi untuk toggle komentar
+function toggleComments(postId) {
+    const commentsSection = document.getElementById(`comments-${postId}`);
+    if (commentsSection.style.display === 'none') {
+        commentsSection.style.display = 'block';
+    } else {
+        commentsSection.style.display = 'none';
+    }
+}
+
+// BARU: Fungsi untuk menambahkan komentar
+function addComment(postId) {
+    const commentInput = document.getElementById(`comment-input-${postId}`);
+    const commentText = commentInput.value.trim();
+    
+    if (!commentText) return;
+    
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    
+    const newComment = {
+        id: Date.now(),
+        userId: currentUser.email,
+        userName: currentUser.name,
+        userAvatar: currentUser.img,
+        text: commentText,
+        timestamp: new Date().toISOString(),
+        likes: 0
+    };
+    
+    post.comments.push(newComment);
+    savePosts();
+    
+    // Reset input dan refresh tampilan
+    commentInput.value = '';
+    displayPosts();
+    
+    // Buka section komentar
+    document.getElementById(`comments-${postId}`).style.display = 'block';
+}
+
+// BARU: Fungsi untuk membagikan postingan
+function sharePost(postId) {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+    
+    post.shares++;
+    savePosts();
+    
+    // Simulasi berbagi
+    alert('Postingan berhasil dibagikan!');
+    
+    displayPosts();
+}
+
+// PERUBAHAN: Fungsi untuk update UI settings
+function updateSettingsUI() {
+    // Mode gelap/terang
+    const settingsToggle = document.getElementById('settings-dark-mode-toggle');
+    settingsToggle.checked = appSettings.darkMode;
+    document.getElementById('theme-status').textContent = appSettings.darkMode ? '🌙 Mode Gelap' : '☀️ Mode Cerah';
+    
+    // Notifikasi
+    document.getElementById('post-notification').checked = appSettings.notifications.posts;
+    document.getElementById('message-notification').checked = appSettings.notifications.messages;
+    document.getElementById('friend-notification').checked = appSettings.notifications.friends;
+    
+    // Privasi
+    document.getElementById('public-profile').checked = appSettings.privacy.publicProfile;
+    document.getElementById('online-status').checked = appSettings.privacy.onlineStatus;
+    document.getElementById('direct-messages').checked = appSettings.privacy.directMessages;
+    
+    // Bahasa
+    document.getElementById('language-select').value = appSettings.language;
+    updateLanguageDisplay();
+}
+
+// PERUBAHAN: Fungsi untuk toggle sub-menu
+function toggleSubMenu(menuId) {
+    const menu = document.getElementById(menuId);
+    const allMenus = document.querySelectorAll('.sub-menu');
+    
+    allMenus.forEach(m => {
+        if (m.id !== menuId) {
+            m.classList.remove('active');
+        }
+    });
+    
+    menu.classList.toggle('active');
+}
+
+// PERUBAHAN: Fungsi untuk update tampilan bahasa
+function updateLanguageDisplay() {
+    const languageNames = {
+        'id': 'Indonesia',
+        'en': 'English',
+        'es': 'Español',
+        'fr': 'Français',
+        'de': 'Deutsch',
+        'ja': '日本語',
+        'zh': '中文'
+    };
+    document.getElementById('current-language').textContent = languageNames[appSettings.language] + ' ▼';
+}
+
+// PERUBAHAN: Fungsi untuk ganti bahasa
+function changeLanguage(lang) {
+    appSettings.language = lang;
+    saveSettings();
+    updateLanguageDisplay();
+    alert(`Bahasa telah diubah ke ${document.getElementById('language-select').options[document.getElementById('language-select').selectedIndex].text}`);
+}
+
+// PERUBAHAN: Fungsi untuk ganti email
+function changeEmail() {
+    const newEmail = document.getElementById('change-email').value;
+    if (newEmail && validateEmail(newEmail)) {
+        // Cek apakah email sudah digunakan oleh pengguna lain
+        const existingUser = allUsers.find(user => user.email === newEmail && user.email !== currentUser.email);
+        if (existingUser) {
+            alert("Email sudah digunakan oleh pengguna lain!");
+            return;
+        }
+        
+        // Update email di semua pengguna
+        const userIndex = allUsers.findIndex(u => u.email === currentUser.email);
+        if (userIndex !== -1) {
+            allUsers[userIndex].email = newEmail;
+            saveAllUsers();
+        }
+        
+        // Update email di current user
+        currentUser.email = newEmail;
+        saveUserData(currentUser);
+        
+        document.getElementById('change-email').value = '';
+        alert('Email berhasil diubah!');
+    } else {
+        alert('Email tidak valid!');
+    }
+}
+
+// PERUBAHAN: Fungsi untuk ganti password
+function changePassword() {
+    const currentPass = document.getElementById('current-password').value;
+    const newPass = document.getElementById('new-password').value;
+    
+    if (!currentPass || !newPass) {
+        alert('Harap isi semua field!');
+        return;
+    }
+    
+    if (newPass.length < 8) {
+        alert('Kata sandi baru minimal 8 karakter!');
+        return;
+    }
+    
+    // Verifikasi password lama
+    if (currentUser.password === currentPass) {
+        // Update password di semua pengguna
+        const userIndex = allUsers.findIndex(u => u.email === currentUser.email);
+        if (userIndex !== -1) {
+            allUsers[userIndex].password = newPass;
+            saveAllUsers();
+        }
+        
+        // Update password di current user
+        currentUser.password = newPass;
+        saveUserData(currentUser);
+        
+        document.getElementById('current-password').value = '';
+        document.getElementById('new-password').value = '';
+        alert('Kata sandi berhasil diubah!');
+    } else {
+        alert('Kata sandi saat ini salah!');
+    }
+}
+
+// PERUBAHAN: Fungsi untuk reset settings
+function resetSettings() {
+    if (confirm('Apakah Anda yakin ingin mengembalikan semua pengaturan ke default?')) {
+        appSettings = {
+            darkMode: true,
+            notifications: {
+                posts: true,
+                messages: true,
+                friends: true
+            },
+            privacy: {
+                publicProfile: true,
+                onlineStatus: true,
+                directMessages: true
+            },
+            language: 'id'
+        };
+        saveSettings();
+        updateSettingsUI();
+        toggleDarkMode();
+        alert('Pengaturan telah direset ke default!');
+    }
+}
+
+// PERUBAHAN: Fungsi validasi email
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+// Fungsi: Kembali ke Edit Profil dari Home (Memuat Data Sebelumnya)
+function showEditProfile() {
+    document.querySelector('.dropdown-menu').classList.remove('active');
+
+    document.getElementById('profile_name').value = currentUser.name || '';
+    
+    const previewImg = document.getElementById('preview-profile-pic');
+    const placeholderText = document.getElementById('placeholder-text');
+    const fileInput = document.getElementById('file_upload_input');
+    const uploadWarning = document.getElementById('upload-warning');
+
+    fileInput.value = '';
+
+    // Tampilkan foto yang sudah ada
+    if (currentUser.img && currentUser.img !== DEFAULT_PROFILE_IMG) {
+        previewImg.src = currentUser.img;
+        previewImg.style.display = 'block';
+        placeholderText.style.display = 'none';
+        uploadedFileUrl = currentUser.img;
+        uploadWarning.style.display = 'none';
+    } else {
+        previewImg.src = '';
+        previewImg.style.display = 'none';
+        placeholderText.style.display = 'block';
+        uploadedFileUrl = '';
+        uploadWarning.style.display = 'block';
+    }
+
+    showProfileSetup();
+}
+
+// Fungsi untuk menampilkan layar Beranda
+function showHome() {
+    if (!isOnline) {
+        showErrorScreen();
+        return;
+    }
+    hideAllScreens();
+    document.getElementById('home-screen').style.display = 'grid';
+    
+    // Hapus centering body agar home-container bisa memenuhi layar
+    document.body.style.display = 'block';
+    document.body.style.minHeight = '100vh';
+
+    // Update nama dan gambar di Header
+    document.getElementById('user-profile-name-header').textContent = currentUser.name;
+    document.getElementById('user-profile-pic-header').src = currentUser.img;
+    
+    // Update nama dan gambar di Sidebar
+    document.getElementById('user-profile-name-sidebar').textContent = currentUser.name;
+    document.getElementById('user-profile-pic-sidebar').src = currentUser.img;
+    
+    // Update navigasi bawah
+    updateBottomNav('home');
+    
+    // Tampilkan postingan
+    displayPosts();
+    
+    // Tampilkan daftar teman - DIPERBAIKI
+    displayFriends();
+}
+
+// PERUBAHAN: Fungsi untuk update navigasi bawah
+function updateBottomNav(activeItem) {
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    if (activeItem === 'home') {
+        document.querySelector('.nav-item:nth-child(1)').classList.add('active');
+    } else if (activeItem === 'upload') {
+        document.querySelector('.nav-item:nth-child(2)').classList.add('active');
+    } else if (activeItem === 'messages') {
+        document.querySelector('.nav-item:nth-child(3)').classList.add('active');
+    } else if (activeItem === 'profile') {
+        document.querySelector('.nav-item:nth-child(4)').classList.add('active');
+    }
+}
+
+// Fungsi untuk Logout
+function logout() {
+    // Konfirmasi logout
+    const confirmLogout = confirm("Apakah Anda yakin ingin logout?");
+    if (!confirmLogout) return;
+    
+    // Buat pesan konfirmasi visual
+    const logoutMessage = document.createElement('div');
+    logoutMessage.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--card-color);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        z-index: 1000;
+        text-align: center;
+        border: 2px solid var(--accent-purple);
+        max-width: 400px;
+        width: 90%;
+    `;
+    
+    logoutMessage.innerHTML = `
+        <h3 style="color: var(--accent-purple); margin-bottom: 15px;">👋 Keluar dari Aplikasi</h3>
+        <p style="margin-bottom: 20px;">Anda akan logout dari akun <strong>${currentUser.name || currentUser.email}</strong></p>
+        <p style="margin-bottom: 20px; color: #a0a0a0; font-size: 14px;">Semua data sesi akan dihapus dan Anda perlu login kembali untuk mengakses akun.</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button onclick="confirmLogoutAction()" style="padding: 10px 20px; background: var(--accent-purple); color: white; border: none; border-radius: 8px; cursor: pointer;">Ya, Logout</button>
+            <button onclick="this.parentElement.parentElement.remove();" style="padding: 10px 20px; background: rgba(146, 125, 252, 0.2); color: var(--accent-purple); border: 1px solid var(--accent-purple); border-radius: 8px; cursor: pointer;">Batal</button>
+        </div>
+    `;
+    
+    document.body.appendChild(logoutMessage);
+}
+
+// Fungsi untuk konfirmasi logout
+function confirmLogoutAction() {
+    // Stop kamera jika sedang aktif
+    stopCamera();
+    
+    // Reset semua data sesi
+    currentUser = {};
+    uploadedFileUrl = '';
+    currentChatUser = null;
+    currentChatId = null;
+    currentFriendChatUser = null;
+    currentFriendChatId = null;
+    
+    // Hapus URL media jika ada
+    if (currentMediaURL) {
+        URL.revokeObjectURL(currentMediaURL);
+        currentMediaURL = null;
+        currentMediaType = null;
+    }
+    
+    // Hapus data pengguna dari localStorage (hanya data sesi, bukan data akun)
+    localStorage.removeItem(USER_STORAGE_KEY);
+    
+    // Hapus pesan konfirmasi
+    const logoutMessage = document.querySelector('div[style*="z-index: 1000"]');
+    if (logoutMessage) logoutMessage.remove();
+    
+    // Tampilkan animasi logout
+    const logoutAnimation = document.createElement('div');
+    logoutAnimation.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--bg-color);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.5s;
+    `;
+    
+    logoutAnimation.innerHTML = `
+        <div style="font-size: 60px; margin-bottom: 20px;">👋</div>
+        <h3 style="color: var(--accent-purple); margin-bottom: 10px;">Logout Berhasil</h3>
+        <p style="color: var(--text-color); opacity: 0.8;">Anda telah keluar dari aplikasi</p>
+    `;
+    
+    document.body.appendChild(logoutAnimation);
+    
+    // Setelah 1.5 detik, tampilkan halaman awal
+    setTimeout(() => {
+        logoutAnimation.style.opacity = '0';
+        setTimeout(() => {
+            logoutAnimation.remove();
+            showWelcomeScreen();
+        }, 500);
+    }, 1500);
+}
+
+// PERUBAHAN: Fungsi Toggle Mode Gelap/Cerah yang diperbarui
+function toggleDarkMode() {
+    isLightMode = !appSettings.darkMode;
+    appSettings.darkMode = !isLightMode;
+    saveSettings();
+    
+    document.body.classList.toggle('light-mode', isLightMode);
+
+    // Update status checkbox
+    const toggleCheckbox = document.getElementById('dark-mode-toggle');
+    const settingsToggle = document.getElementById('settings-dark-mode-toggle');
+    toggleCheckbox.checked = appSettings.darkMode;
+    settingsToggle.checked = appSettings.darkMode;
+    
+    const themeStatus = document.getElementById('theme-status');
+    if (themeStatus) {
+        themeStatus.textContent = appSettings.darkMode ? '🌙 Mode Gelap' : '☀️ Mode Cerah';
+    }
+}
+
+// PERUBAHAN: Event listeners untuk semua toggle settings
+function setupSettingsEventListeners() {
+    // Mode gelap/terang
+    document.getElementById('settings-dark-mode-toggle').addEventListener('change', function() {
+        appSettings.darkMode = this.checked;
+        saveSettings();
+        toggleDarkMode();
+    });
+
+    // Notifikasi
+    document.getElementById('post-notification').addEventListener('change', function() {
+        appSettings.notifications.posts = this.checked;
+        saveSettings();
+        alert(`Notifikasi postingan ${this.checked ? 'diaktifkan' : 'dimatikan'}`);
+    });
+
+    document.getElementById('message-notification').addEventListener('change', function() {
+        appSettings.notifications.messages = this.checked;
+        saveSettings();
+        alert(`Notifikasi pesan ${this.checked ? 'diaktifkan' : 'dimatikan'}`);
+    });
+
+    document.getElementById('friend-notification').addEventListener('change', function() {
+        appSettings.notifications.friends = this.checked;
+        saveSettings();
+        alert(`Notifikasi pertemanan ${this.checked ? 'diaktifkan' : 'dimatikan'}`);
+    });
+
+    // Privasi
+    document.getElementById('public-profile').addEventListener('change', function() {
+        appSettings.privacy.publicProfile = this.checked;
+        saveSettings();
+        alert(`Profil ${this.checked ? 'publik' : 'pribadi'}`);
+    });
+
+    document.getElementById('online-status').addEventListener('change', function() {
+        appSettings.privacy.onlineStatus = this.checked;
+        saveSettings();
+        alert(`Status online ${this.checked ? 'ditampilkan' : 'disembunyikan'}`);
+    });
+
+    document.getElementById('direct-messages').addEventListener('change', function() {
+        appSettings.privacy.directMessages = this.checked;
+        saveSettings();
+        alert(`Pesan langsung ${this.checked ? 'diizinkan' : 'diblokir'}`);
+    });
+}
+
+// PERUBAHAN: Fungsi untuk update profil
+function updateProfile() {
+    const newName = document.getElementById('edit-profile-name').value;
+    
+    if (newName.trim() === '') {
+        alert("Nama profil tidak boleh kosong!");
+        return;
+    }
+    
+    currentUser.name = newName;
+    saveUserData(currentUser);
+    
+    // Update di semua pengguna juga
+    const userIndex = allUsers.findIndex(u => u.email === currentUser.email);
+    if (userIndex !== -1) {
+        allUsers[userIndex].name = newName;
+        saveAllUsers();
+    }
+    
+    alert("Profil berhasil diperbarui!");
+    showProfilePage();
+}
+
+// PERUBAHAN: Fungsi untuk toggle fitur pencarian teman - DIPERBAIKI
+function toggleFriendSearch() {
+    const searchContainer = document.getElementById('searchFriendContainer');
+    const searchInput = document.getElementById('searchFriendInput');
+    
+    if (searchContainer.style.display === 'block') {
+        searchContainer.style.display = 'none';
+        searchInput.value = '';
+        document.getElementById('searchResults').innerHTML = '';
+    } else {
+        searchContainer.style.display = 'block';
+        searchInput.focus();
+        
+        // Tampilkan pesan untuk memasukkan pencarian
+        document.getElementById('searchResults').innerHTML = '<p style="text-align: center; color: #a0a0a0; font-size: 14px; padding: 10px;">Masukkan nama atau email untuk mencari teman</p>';
+    }
+}
 
 // PERUBAHAN: Fungsi untuk mencari teman - DIPERBAIKI
 function searchFriends() {
@@ -188,7 +1985,7 @@ function searchFriends() {
         return;
     }
     
-    // Cari dari database pengguna yang sebenarnya
+    // Cari dari database pengguna yang sebenarnya (allUsers)
     const filteredUsers = allUsers.filter(user => 
         (user.email !== currentUser.email) && // Bukan diri sendiri
         !user.isOperator && // Bukan operator
@@ -226,12 +2023,6 @@ function searchFriends() {
     
     searchResults.innerHTML = resultsHTML;
 }
-
-// Hapus fungsi displaySampleUsersForAdding karena tidak perlu lagi
-
-
-
-
 
 // PERUBAHAN: Fungsi untuk menambahkan teman - DIPERBAIKI
 function addFriend(userEmail) {
@@ -294,112 +2085,287 @@ function addFriend(userEmail) {
     }
 }
 
-
-
-
-
-// Fungsi untuk Logout yang benar-benar membersihkan sesi
-function logout() {
-    // Konfirmasi logout
-    const confirmLogout = confirm("Apakah Anda yakin ingin logout?");
-    if (!confirmLogout) return;
+// BARU: Fungsi untuk menampilkan daftar teman - DIPERBAIKI
+function displayFriends() {
+    const friendsContainer = document.getElementById('friendsContainer');
     
-    // Buat pesan konfirmasi visual
-    const logoutMessage = document.createElement('div');
-    logoutMessage.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: var(--card-color);
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        z-index: 1000;
-        text-align: center;
-        border: 2px solid var(--accent-purple);
-        max-width: 400px;
-        width: 90%;
-    `;
+    if (friends.length === 0) {
+        friendsContainer.innerHTML = '<p style="text-align: center; color: #a0a0a0; font-size: 14px; padding: 10px;">Belum ada teman. Cari dan tambahkan teman!</p>';
+        return;
+    }
     
-    logoutMessage.innerHTML = `
-        <h3 style="color: var(--accent-purple); margin-bottom: 15px;">👋 Keluar dari Aplikasi</h3>
-        <p style="margin-bottom: 20px;">Anda akan logout dari akun <strong>${currentUser.name || currentUser.email}</strong></p>
-        <p style="margin-bottom: 20px; color: #a0a0a0; font-size: 14px;">Semua data sesi akan dihapus dan Anda perlu login kembali untuk mengakses akun.</p>
-        <div style="display: flex; gap: 10px; justify-content: center;">
-            <button onclick="confirmLogoutAction()" style="padding: 10px 20px; background: var(--accent-purple); color: white; border: none; border-radius: 8px; cursor: pointer;">Ya, Logout</button>
-            <button onclick="this.parentElement.parentElement.remove();" style="padding: 10px 20px; background: rgba(146, 125, 252, 0.2); color: var(--accent-purple); border: 1px solid var(--accent-purple); border-radius: 8px; cursor: pointer;">Batal</button>
-        </div>
-    `;
+    let friendsHTML = '';
     
-    document.body.appendChild(logoutMessage);
+    friends.forEach(friend => {
+        friendsHTML += `
+            <div class="friend-item" onclick="openFriendChat('${friend.email}')">
+                <img src="${friend.img || DEFAULT_PROFILE_IMG}" alt="${friend.name}" class="friend-avatar">
+                <div class="friend-details">
+                    <div class="friend-name">${friend.name}</div>
+                    <div class="friend-status">
+                        <span class="status-indicator ${friend.online ? 'status-online' : 'status-offline'}"></span>
+                        ${friend.online ? 'Online' : 'Offline'}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    friendsContainer.innerHTML = friendsHTML;
 }
 
-// Fungsi untuk konfirmasi logout
-function confirmLogoutAction() {
-    // Reset semua data sesi
-    currentUser = {};
+// BARU: Fungsi untuk menampilkan profil pengguna lain
+function showOtherUserProfile(userId) {
+    // Cari user berdasarkan ID
+    const user = allUsers.find(u => u.id === userId || u.email === userId);
+    if (!user) return;
+    
+    hideAllScreens();
+    document.getElementById('user-profile-page').style.display = 'block';
+    
+    currentProfileUser = user;
+    updateProfilePage();
+    updateBottomNav('profile');
+}
+
+// 1. Proses Pendaftaran -> Lanjut ke Setup Profil
+document.getElementById('register-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const email = document.getElementById('reg_email').value;
+    const password = document.getElementById('reg_password').value;
+    
+    // Validasi email
+    if (!validateEmail(email)) {
+        alert("Format email tidak valid!");
+        return;
+    }
+    
+    // Validasi password
+    if (password.length < 8) {
+        alert("Kata sandi minimal 8 karakter!");
+        return;
+    }
+    
+    // Cek apakah email sudah terdaftar
+    const existingUser = allUsers.find(user => user.email === email);
+    if (existingUser) {
+        // Tampilkan pesan dengan logika yang lebih baik
+        const messageBox = document.createElement('div');
+        messageBox.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card-color);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1000;
+            text-align: center;
+            border: 2px solid var(--accent-purple);
+            max-width: 400px;
+            width: 90%;
+        `;
+        
+        messageBox.innerHTML = `
+            <h3 style="color: var(--accent-purple); margin-bottom: 15px;">⚠️ Email Sudah Terdaftar</h3>
+            <p style="margin-bottom: 20px;">Email <strong>${email}</strong> sudah terdaftar di sistem.</p>
+            <p style="margin-bottom: 20px; color: #a0a0a0; font-size: 14px;">Silakan login jika ini adalah akun Anda, atau gunakan email lain untuk mendaftar.</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button onclick="this.parentElement.parentElement.remove(); showLogin();" style="padding: 10px 20px; background: var(--accent-purple); color: white; border: none; border-radius: 8px; cursor: pointer;">Login Sekarang</button>
+                <button onclick="this.parentElement.parentElement.remove();" style="padding: 10px 20px; background: rgba(146, 125, 252, 0.2); color: var(--accent-purple); border: 1px solid var(--accent-purple); border-radius: 8px; cursor: pointer;">Gunakan Email Lain</button>
+            </div>
+        `;
+        
+        document.body.appendChild(messageBox);
+        return;
+    }
+    
+    // Data sementara untuk register
+    currentUser.email = email;
+    currentUser.password = password; // Hanya untuk simulasi
+    
+    // Reset data profil untuk pendaftaran baru
     uploadedFileUrl = '';
-    currentChatUser = null;
-    currentChatId = null;
-    currentFriendChatUser = null;
-    currentFriendChatId = null;
-    
-    // Hapus data pengguna dari localStorage (hanya data sesi, bukan data akun)
-    localStorage.removeItem(USER_STORAGE_KEY);
-    
-    // Hapus pesan konfirmasi
-    const logoutMessage = document.querySelector('div[style*="z-index: 1000"]');
-    if (logoutMessage) logoutMessage.remove();
-    
-    // Tampilkan animasi logout
-    const logoutAnimation = document.createElement('div');
-    logoutAnimation.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--bg-color);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        transition: opacity 0.5s;
-    `;
-    
-    logoutAnimation.innerHTML = `
-        <div style="font-size: 60px; margin-bottom: 20px;">👋</div>
-        <h3 style="color: var(--accent-purple); margin-bottom: 10px;">Logout Berhasil</h3>
-        <p style="color: var(--text-color); opacity: 0.8;">Anda telah keluar dari aplikasi</p>
-    `;
-    
-    document.body.appendChild(logoutAnimation);
-    
-    // Setelah 1.5 detik, tampilkan halaman awal
-    setTimeout(() => {
-        logoutAnimation.style.opacity = '0';
-        setTimeout(() => {
-            logoutAnimation.remove();
-            showWelcomeScreen();
-        }, 500);
-    }, 1500);
-}
+    currentUser.name = '';
+    currentUser.img = DEFAULT_PROFILE_IMG;
 
+    // Simpan user baru ke daftar semua pengguna
+    allUsers.push({
+        id: Date.now().toString(),
+        email: currentUser.email,
+        password: currentUser.password,
+        name: '',
+        img: DEFAULT_PROFILE_IMG
+    });
+    saveAllUsers();
+    
+    saveUserData(currentUser); // Simpan data awal
+    
+    alert("🎉 Pendaftaran Berhasil! Sekarang lengkapi profil Anda.");
+    showEditProfile();
+});
 
+// 2. Proses Login -> Lanjut ke Setup Profil/Beranda
+document.getElementById('login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const loginEmail = document.getElementById('log_email').value;
+    const loginPassword = document.getElementById('log_password').value;
 
+    // Cari user di daftar semua pengguna
+    const user = allUsers.find(u => u.email === loginEmail && u.password === loginPassword);
+    
+    if (user) {
+        currentUser = user;
+        saveUserData(currentUser); // Simpan sebagai user aktif
+        uploadedFileUrl = currentUser.img;
+        alert("Login Berhasil!");
 
+        // Jika nama dan gambar sudah lengkap, langsung ke Beranda
+        if (currentUser.name && currentUser.img && currentUser.img !== DEFAULT_PROFILE_IMG) {
+            showHome();
+        } else {
+            // Jika profil belum lengkap, arahkan ke setup profil
+            showEditProfile();
+        }
+    } else {
+        alert("Login Gagal! Email atau kata sandi salah.");
+    }
+});
 
+// 3. Proses Lupa Password
+document.getElementById('forgot-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const email = document.getElementById('forgot_email').value;
+    
+    // Validasi email
+    if (!validateEmail(email)) {
+        alert("Format email tidak valid!");
+        return;
+    }
+    
+    // Cek apakah email terdaftar
+    const userExists = allUsers.find(user => user.email === email);
+    if (!userExists) {
+        alert("Email tidak terdaftar dalam sistem!");
+        return;
+    }
+    
+    alert("Tautan reset password telah dikirim ke email Anda (simulasi).");
+});
+
+// 4. Handle File Upload dan Preview dari Galeri
+document.getElementById('file_upload_input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const previewImg = document.getElementById('preview-profile-pic');
+    const placeholderText = document.getElementById('placeholder-text');
+    const uploadWarning = document.getElementById('upload-warning');
+    
+    if (file) {
+        const reader = new FileReader();
+        
+        reader.onload = function(event) {
+            previewImg.src = event.target.result;
+            previewImg.style.display = 'block';
+            placeholderText.style.display = 'none';
+            uploadWarning.style.display = 'none';
+
+            uploadedFileUrl = event.target.result;
+        };
+        
+        reader.readAsDataURL(file);
+    } else {
+        if (uploadedFileUrl) {
+            previewImg.src = uploadedFileUrl;
+            previewImg.style.display = 'block';
+            placeholderText.style.display = 'none';
+            uploadWarning.style.display = 'none';
+        } else {
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+            placeholderText.style.display = 'block';
+            uploadWarning.style.display = 'block';
+        }
+    }
+});
+
+// PERUBAHAN: Handle upload foto profil di halaman profil
+document.getElementById('edit-profile-pic').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            currentUser.img = event.target.result;
+            // Update di semua pengguna juga
+            const userIndex = allUsers.findIndex(u => u.email === currentUser.email);
+            if (userIndex !== -1) {
+                allUsers[userIndex].img = event.target.result;
+                saveAllUsers();
+            }
+            saveUserData(currentUser);
+            document.getElementById('profile-page-pic').src = event.target.result;
+            alert("Foto profil berhasil diubah!");
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// 5. Proses Setup Profil -> Lanjut ke Beranda (DENGAN VALIDASI FOTO WAJIB)
+document.getElementById('profile-setup-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const profileName = document.getElementById('profile_name').value;
+    const uploadWarning = document.getElementById('upload-warning');
+
+    // **VALIDASI WAJIB FOTO PROFIL**
+    if (!uploadedFileUrl || profileName.trim() === '') {
+        uploadWarning.style.display = 'block';
+        alert("Mohon lengkapi **Nama Profil** dan **Unggah Foto Profil** sebelum melanjutkan.");
+        return;
+    }
+    
+    // Simpan data profil ke objek currentUser dan localStorage
+    currentUser.name = profileName;
+    currentUser.img = uploadedFileUrl;
+    
+    // Update di semua pengguna juga
+    const userIndex = allUsers.findIndex(u => u.email === currentUser.email);
+    if (userIndex !== -1) {
+        allUsers[userIndex].name = profileName;
+        allUsers[userIndex].img = uploadedFileUrl;
+        saveAllUsers();
+    }
+    
+    saveUserData(currentUser);
+
+    // Buat chat dengan operator untuk user baru
+    const operatorChatId = [currentUser.email, 'operator@xcxavier.com'].sort().join('_');
+    if (!chats[operatorChatId]) {
+        chats[operatorChatId] = {
+            participants: [currentUser.email, 'operator@xcxavier.com'],
+            messages: [{
+                id: Date.now(),
+                sender: 'operator@xcxavier.com',
+                text: 'Selamat Datang Di XC Xavier Chatting! 🎉\n\nHalo! Saya Operator XC Xavier. Senang bertemu dengan Anda!',
+                timestamp: new Date().toISOString(),
+                read: false
+            }]
+        };
+        saveChats();
+    }
+
+    alert(`Profil ${profileName} telah disimpan/diperbarui. Selamat datang!`);
+    showHome();
+});
+
+// 6. Event Listener untuk Toggle Dark Mode
+document.getElementById('dark-mode-toggle').addEventListener('change', toggleDarkMode);
+
+// PERUBAHAN: Event listener untuk pencarian teman
+document.getElementById('searchFriendInput').addEventListener('input', searchFriends);
 
 // 7. Penanganan saat Halaman Dimuat
 function initApp() {
-    // RESET DATA PENGUNGA YANG SUDAH ADA (untuk testing)
-    localStorage.removeItem(USER_STORAGE_KEY);
-    
-    // Jangan hapus USERS_STORAGE_KEY agar data akun tetap ada
-    // localStorage.removeItem(USERS_STORAGE_KEY); // Jangan hapus ini agar data akun tetap tersimpan
-    
     // Cek status koneksi
     isOnline = navigator.onLine;
     
@@ -434,27 +2400,5 @@ function initApp() {
     document.body.classList.toggle('light-mode', !appSettings.darkMode);
 }
 
-
-
-
-
-
-// BARU: Fungsi untuk menampilkan halaman awal
-function showWelcomeScreen() {
-    hideAllScreens();
-    document.getElementById('welcome-screen').style.display = 'block';
-    
-    // Reset form pendaftaran dan login
-    document.getElementById('reg_email').value = '';
-    document.getElementById('reg_password').value = '';
-    document.getElementById('log_email').value = '';
-    document.getElementById('log_password').value = '';
-    document.getElementById('forgot_email').value = '';
-    
-    // Reset body styling
-    document.body.style.display = 'flex';
-    document.body.style.justifyContent = 'center';
-    document.body.style.alignItems = 'center';
-    document.body.style.minHeight = '100vh';
-    document.body.style.padding = '20px';
-}
+// Jalankan inisialisasi aplikasi
+initApp();
