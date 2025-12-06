@@ -6690,3 +6690,820 @@
 </body>
 </html>
 
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Media Sosial Modern - Dark Mode</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- HALAMAN AWAL BARU -->
+    <div class="welcome-container" id="welcome-screen">
+        <div class="app-logo-large">XC Xavier</div>
+        <div class="app-slogan">Temukan dan bagikan momen terbaik Anda</div>
+        
+        <div class="welcome-buttons">
+            <button class="welcome-btn register-btn" onclick="showRegister()">
+                <span class="btn-icon">📝</span>
+                <span>Daftar</span>
+            </button>
+            <button class="welcome-btn login-btn" onclick="showLogin()">
+                <span class="btn-icon">🔐</span>
+                <span>Login</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- BARU: Halaman Error Koneksi -->
+    <div class="error-container" id="error-screen" style="display:none;">
+        <div class="error-icon">📶</div>
+        <div class="error-title">Koneksi Terputus</div>
+        <div class="error-message">Tidak dapat terhubung ke internet. Periksa koneksi Anda dan coba lagi.</div>
+        <button class="reload-btn" onclick="checkConnection()">
+            <span class="btn-icon">🔄</span>
+            <span>Muat Ulang</span>
+        </button>
+        <div class="connection-status" id="connection-status">NON KONEKSI</div>
+    </div>
+
+    <div class="auth-container" id="auth-screen" style="display:none;">
+        <h2>Daftar Akun Baru</h2>
+        
+        <form id="register-form">
+            <div class="input-group">
+                <label for="reg_email">Email</label>
+                <input type="email" id="reg_email" placeholder="contoh@email.com" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="reg_password">Kata Sandi</label>
+                <input type="password" id="reg_password" placeholder="Minimal 8 karakter" required>
+            </div>
+            
+            <div class="input-group">
+                <button type="submit">DAFTAR</button>
+            </div>
+        </form>
+
+        <div class="link-group">
+            <a href="#" onclick="showLogin()">Sudah punya akun? **LOGIN**</a>
+            <span style="color:var(--text-color);"> | </span>
+            <a href="#" onclick="showForgotPassword()">**Lupa Kata Sandi?**</a>
+        </div>
+    </div>
+    
+    <div class="auth-container" id="login-screen" style="display:none;">
+        <h2>Login Akun</h2>
+        <form id="login-form">
+            <div class="input-group">
+                <label for="log_email">Email</label>
+                <input type="email" id="log_email" placeholder="Email Anda" required>
+            </div>
+            <div class="input-group">
+                <label for="log_password">Kata Sandi</label>
+                <input type="password" id="log_password" placeholder="Kata Sandi Anda" required>
+            </div>
+            <div class="input-group">
+                <button type="submit">LOGIN</button>
+            </div>
+        </form>
+        <div class="link-group">
+            <a href="#" onclick="showRegister()">Belum punya akun? **DAFTAR**</a>
+            <span style="color:var(--text-color);"> | </span>
+            <a href="#" onclick="showForgotPassword()">**Lupa Kata Sandi?**</a>
+        </div>
+    </div>
+    
+    <div class="auth-container" id="forgot-screen" style="display:none;">
+        <h2>Lupa Kata Sandi</h2>
+        <p style="text-align: center; margin-bottom: 20px; font-size: 14px;">Masukkan email Anda, kami akan mengirimkan tautan reset.</p>
+        <form id="forgot-form">
+            <div class="input-group">
+                <label for="forgot_email">Email</label>
+                <input type="email" id="forgot_email" placeholder="Email terdaftar Anda" required>
+            </div>
+            <div class="input-group">
+                <button type="submit">KIRIM TAUTAN RESET</button>
+            </div>
+        </form>
+        <div class="link-group">
+            <a href="#" onclick="showLogin()">**Kembali ke Login**</a>
+        </div>
+    </div>
+
+    <div class="auth-container" id="profile-setup-screen" style="display:none;">
+        <h2>Selesaikan Profil Anda ✨</h2>
+        <form id="profile-setup-form">
+            <div class="profile-setup">
+                <div class="profile-placeholder" onclick="document.getElementById('file_upload_input').click()">
+                    <img id="preview-profile-pic" src="" alt="Foto Profil" style="display:none;">
+                    <span id="placeholder-text">Klik untuk Upload Foto (WAJIB)</span>
+                </div>
+                <p id="upload-warning" style="color: #ff6b6b; font-size: 14px; display: none;">**Wajib** unggah foto profil.</p>
+            </div>
+            
+            <input type="file" id="file_upload_input" accept="image/*" style="display:none;">
+            
+            <div class="input-group" style="margin-top: 20px;">
+                <label for="profile_name">Nama Profil</label>
+                <input type="text" id="profile_name" placeholder="Nama yang akan ditampilkan (Wajib)" required>
+            </div>
+            
+            <div class="input-group">
+                <button type="submit">LANJUT KE BERANDA</button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="home-container" id="home-screen" style="display:none;">
+        
+        <header class="header">
+            <div class="header-profile-info">
+                <div class="app-logo">XC</div>
+                <img src="https://via.placeholder.com/80/927dfc/ffffff?text=U" alt="Foto Profil Pengguna" id="user-profile-pic-header" class="profile-pic" onclick="showUserProfilePage()">
+                <span class="username" id="user-profile-name-header">**Nama Pengguna Anda**</span>
+            </div>
+            
+            <div class="search-bar">
+                <input type="text" id="main-search-input" placeholder="Cari Video, Akun, Topik, atau Lainnya..." oninput="handleSearchInput(event)" onfocus="showSearchSuggestions()">
+                <div class="search-suggestions" id="search-suggestions">
+                    <!-- Saran pencarian akan ditampilkan di sini -->
+                </div>
+            </div>
+            
+            <div class="menu-wrapper">
+                <div class="menu-icon">
+                    <span style="font-size: 24px;">&#9776;</span>
+                </div>
+                
+                <div class="dropdown-menu">
+                    <div class="dropdown-menu-item" onclick="showProfilePage()">
+                        <span style="font-weight: 600;">&#128100; Profil Saya</span>
+                        <p>Lihat dan edit profil Anda</p>
+                    </div>
+                    
+                    <div class="dropdown-menu-item" onclick="showSettingsPage()">
+                        <span style="font-weight: 600;">&#9881; Pengaturan</span>
+                        <p>Atur preferensi aplikasi</p>
+                    </div>
+
+                    <div class="theme-toggle-container">
+                        <span style="font-weight: 600;">🌙 Mode Gelap</span>
+                        <label class="switch">
+                            <input type="checkbox" id="dark-mode-toggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="dropdown-menu-item" onclick="logout()" style="color: #ff6b6b; font-weight: 600;">
+                        <span>&#10145; Logout</span>
+                    </div>
+                </div>
+            </div>
+            </header>
+        
+        <div class="sidebar-left">
+            <!-- PERUBAHAN: Profil sekarang horizontal -->
+            <div class="user-profile">
+                <img src="https://via.placeholder.com/80/927dfc/ffffff?text=U" alt="Foto Profil Pengguna" id="user-profile-pic-sidebar" class="profile-pic" onclick="showUserProfilePage()">
+                <div class="profile-name-display">
+                    <div class="name" id="user-profile-name-sidebar">**Nama Pengguna Anda**</div>
+                    <div class="status">Online</div>
+                </div>
+            </div>
+            
+            <!-- PERUBAHAN: Fitur Tambah Teman Baru - DIPERBAIKI -->
+            <div class="add-friend-section">
+                <div class="add-friend-btn" onclick="toggleFriendSearch()">
+                    <div class="icon">+</div>
+                    <span>Tambah Pertemanan</span>
+                </div>
+                
+                <div class="search-friend-container" id="searchFriendContainer">
+                    <input type="text" class="search-friend-input" id="searchFriendInput" placeholder="Cari nama atau username..." oninput="searchFriends()">
+                    
+                    <div class="search-results" id="searchResults">
+                        <!-- Hasil pencarian akan ditampilkan di sini -->
+                    </div>
+                </div>
+
+                <!-- BARU: Daftar Teman yang Sudah Ditambahkan - DIPERBAIKI -->
+                <div class="friends-list" id="friendsList">
+                    <div class="friends-list-title">Teman Anda</div>
+                    <div id="friendsContainer">
+                        <!-- Daftar teman akan ditampilkan di sini -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <!-- PERUBAHAN: Judul Beranda dipindah ke main content -->
+            <div class="home-title-main">#Beranda</div>
+            
+            <!-- BARU: Area untuk postingan yang akan ditampilkan -->
+            <div id="posts-container">
+                <!-- Postingan akan ditampilkan di sini -->
+            </div>
+        </div>
+        
+        <div class="sidebar-right">
+            <h3>**Rekomendasi Konten**</h3>
+            <div style="margin-bottom: 15px; padding: 10px; background: rgba(146, 125, 252, 0.1); border-radius: 8px;">
+                <p style="font-size: 14px; font-weight: 600;">#TrenHariIni</p>
+                <p style="font-size: 12px; color: #a0a0a0;">Diskusi teknologi terbaru.</p>
+            </div>
+            <div style="margin-bottom: 15px; padding: 10px; background: rgba(146, 125, 252, 0.1); border-radius: 8px;">
+                <p style="font-size: 14px; font-weight: 600;">@PenggunaPopuler</p>
+                <p style="font-size: 12px; color: #a0a0a0;">Cek profil kreatif ini!</p>
+            </div>
+        </div>
+        
+        <!-- PERUBAHAN: Navigasi Bawah - DITAMBAH ITEM PROFIL DAN PESAN -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="showHome()">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Beranda</div>
+            </div>
+            <div class="nav-item" onclick="showUploadPage()">
+                <div class="nav-icon">📷</div>
+                <div class="nav-label">Buat</div>
+            </div>
+            <div class="nav-item" onclick="showMessagesPage()">
+                <div class="nav-icon">💬</div>
+                <div class="nav-label">Pesan</div>
+            </div>
+            <div class="nav-item" onclick="showUserProfilePage()">
+                <div class="nav-icon">👤</div>
+                <div class="nav-label">Profil</div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- PERUBAHAN: Halaman Profil -->
+    <div class="profile-page" id="profile-page" style="display:none;">
+        <div class="page-header">
+            <button class="back-btn" onclick="showHome()">←</button>
+            <h1 class="page-title">Profil Saya</h1>
+        </div>
+
+        <div class="profile-display">
+            <img src="https://via.placeholder.com/80/927dfc/ffffff?text=U" alt="Foto Profil" id="profile-page-pic" class="profile-pic">
+            <h2 id="profile-page-name">Nama Pengguna</h2>
+        </div>
+
+        <div class="info-group">
+            <div class="info-label">Email</div>
+            <div class="info-value sensitive-info" id="profile-page-email">••••••••@•••••.com</div>
+        </div>
+
+        <div class="info-group">
+            <div class="info-label">Kata Sandi</div>
+            <div class="info-value sensitive-info">••••••••</div>
+        </div>
+
+        <div class="input-group">
+            <label for="edit-profile-name">Nama Profil</label>
+            <input type="text" id="edit-profile-name" placeholder="Masukkan nama baru">
+        </div>
+
+        <div class="input-group">
+            <button type="button" onclick="updateProfile()">Perbarui Profil</button>
+        </div>
+
+        <div class="input-group">
+            <label>Ubah Foto Profil</label>
+            <input type="file" id="edit-profile-pic" accept="image/*" style="display:none;">
+            <button type="button" onclick="document.getElementById('edit-profile-pic').click()">Pilih Foto Baru</button>
+        </div>
+    </div>
+
+    <!-- PERUBAHAN: Halaman Setting - SEMUA FITUR AKTIF -->
+    <div class="settings-page" id="settings-page" style="display:none;">
+        <div class="page-header">
+            <button class="back-btn" onclick="showHome()">←</button>
+            <h1 class="page-title">Pengaturan</h1>
+        </div>
+
+        <!-- Mode Tampilan -->
+        <div class="settings-option" onclick="toggleSubMenu('theme-menu')">
+            <div class="option-info">
+                <div class="option-title">Mode Tampilan</div>
+                <div class="option-desc">Ubah antara mode gelap dan terang</div>
+            </div>
+            <div class="theme-toggle-container" style="border: none; padding: 0; margin: 0;">
+                <span id="theme-status">🌙 Mode Gelap</span>
+                <label class="switch">
+                    <input type="checkbox" id="settings-dark-mode-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Notifikasi -->
+        <div class="settings-option" onclick="toggleSubMenu('notification-menu')">
+            <div class="option-info">
+                <div class="option-title">Notifikasi</div>
+                <div class="option-desc">Kelola pemberitahuan aplikasi</div>
+            </div>
+            <span>▼</span>
+        </div>
+
+        <div class="sub-menu" id="notification-menu">
+            <div class="notification-option">
+                <div class="option-info">
+                    <div class="option-title">Notifikasi Postingan</div>
+                    <div class="option-desc">Dapatkan pemberitahuan postingan baru</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="post-notification" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="notification-option">
+                <div class="option-info">
+                    <div class="option-title">Notifikasi Pesan</div>
+                    <div class="option-desc">Dapatkan pemberitahuan pesan baru</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="message-notification" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="notification-option">
+                <div class="option-info">
+                    <div class="option-title">Notifikasi Pertemanan</div>
+                    <div class="option-desc">Dapatkan pemberitahuan permintaan teman</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="friend-notification" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Privasi -->
+        <div class="settings-option" onclick="toggleSubMenu('privacy-menu')">
+            <div class="option-info">
+                <div class="option-title">Privasi</div>
+                <div class="option-desc">Atur siapa yang dapat melihat profil Anda</div>
+            </div>
+            <span>▼</span>
+        </div>
+
+        <div class="sub-menu" id="privacy-menu">
+            <div class="privacy-option">
+                <div class="option-info">
+                    <div class="option-title">Profil Publik</div>
+                    <div class="option-desc">Semua orang dapat melihat profil Anda</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="public-profile" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="privacy-option">
+                <div class="option-info">
+                    <div class="option-title">Tampilkan Status Online</div>
+                    <div class="option-desc">Orang lain dapat melihat status online Anda</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="online-status" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="privacy-option">
+                <div class="option-info">
+                    <div class="option-title">Izinkan Pesan Langsung</div>
+                    <div class="option-desc">Orang dapat mengirim pesan langsung</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="direct-messages" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Bahasa -->
+        <div class="settings-option" onclick="toggleSubMenu('language-menu')">
+            <div class="option-info">
+                <div class="option-title">Bahasa</div>
+                <div class="option-desc">Pilih bahasa aplikasi</div>
+            </div>
+            <span id="current-language">Indonesia ▼</span>
+        </div>
+
+        <div class="sub-menu" id="language-menu">
+            <select class="language-select" id="language-select" onchange="changeLanguage(this.value)">
+                <option value="id">Bahasa Indonesia</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="ja">日本語</option>
+                <option value="zh">中文</option>
+            </select>
+        </div>
+
+        <!-- Pengaturan Akun -->
+        <div class="settings-option" onclick="toggleSubMenu('account-menu')">
+            <div class="option-info">
+                <div class="option-title">Pengaturan Akun</div>
+                <div class="option-desc">Kelola data akun Anda</div>
+            </div>
+            <span>▼</span>
+        </div>
+
+        <div class="sub-menu" id="account-menu">
+            <div class="input-group">
+                <label>Ubah Email</label>
+                <input type="email" id="change-email" placeholder="Email baru">
+                <button type="button" onclick="changeEmail()">Simpan Email</button>
+            </div>
+            <div class="input-group">
+                <label>Ubah Kata Sandi</label>
+                <input type="password" id="current-password" placeholder="Kata sandi saat ini">
+                <input type="password" id="new-password" placeholder="Kata sandi baru">
+                <button type="button" onclick="changePassword()">Simpan Kata Sandi</button>
+            </div>
+        </div>
+
+        <!-- Reset Pengaturan -->
+        <div class="settings-option" onclick="resetSettings()" style="color: #ff6b6b;">
+            <div class="option-info">
+                <div class="option-title">Reset Pengaturan</div>
+                <div class="option-desc">Kembalikan semua pengaturan ke default</div>
+            </div>
+            <span>🔄</span>
+        </div>
+    </div>
+
+    <!-- PERUBAHAN: Halaman Pesan/Notifikasi - HANYA UNTUK OPERATOR -->
+    <div class="messages-page" id="messages-page" style="display:none;">
+        <div class="messages-header">
+            <button class="back-btn" onclick="showHome()">←</button>
+            <h2 class="page-title">Pesan Operator</h2>
+        </div>
+        
+        <div class="messages-content">
+            <div class="message-list" id="message-list">
+                <!-- Hanya operator yang ditampilkan di sini -->
+            </div>
+        </div>
+    </div>
+
+    <!-- BARU: Halaman Chat dengan Teman -->
+    <div class="friend-chat-page" id="friend-chat-page" style="display:none;">
+        <div class="friend-chat-header">
+            <button class="back-btn" onclick="showHome()">←</button>
+            <img src="https://via.placeholder.com/80/927dfc/ffffff?text=F" alt="Foto Teman" id="friend-chat-profile-pic" class="profile-pic">
+            <div class="chat-info">
+                <div class="chat-name" id="friend-chat-profile-name">Nama Teman</div>
+                <div class="chat-status" id="friend-chat-status">Online</div>
+            </div>
+        </div>
+        
+        <div class="friend-chat-content" id="friend-chat-content">
+            <!-- Pesan dengan teman akan ditampilkan di sini -->
+        </div>
+        
+        <div class="friend-chat-input-container">
+            <textarea class="chat-input" id="friend-chat-input" placeholder="Ketik pesan..." rows="1"></textarea>
+            <button class="chat-send-btn" onclick="sendFriendMessage()">➤</button>
+        </div>
+    </div>
+
+    <!-- BARU: Halaman Chat dengan Operator (Tetap Ada) -->
+    <div class="chat-page" id="chat-page" style="display:none;">
+        <div class="chat-header">
+            <button class="back-btn" onclick="showMessagesPage()">←</button>
+            <img src="https://via.placeholder.com/80/927dfc/ffffff?text=🤖" alt="Foto Operator" id="chat-profile-pic" class="profile-pic">
+            <div class="chat-info">
+                <div class="chat-name" id="chat-profile-name">🤖 Operator XC Xavier</div>
+                <div class="chat-status" id="chat-status">Online</div>
+            </div>
+        </div>
+        
+        <div class="chat-content" id="chat-content">
+            <!-- Pesan akan ditampilkan di sini -->
+        </div>
+        
+        <div class="chat-input-container">
+            <textarea class="chat-input" id="chat-input" placeholder="Ketik pesan..." rows="1"></textarea>
+            <button class="chat-send-btn" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <!-- BARU: Halaman Upload Konten SEPERTI TIKTOK (DIUBAH) -->
+    <div class="upload-page" id="upload-page">
+        <div class="upload-header">
+            <button class="back-btn" onclick="closeUploadPage()">←</button>
+            <!-- EDIT: Tulisan "Buat Konten" dihapus (hanya padding kosong) -->
+            <h2 class="page-title"></h2>
+            <div></div>
+        </div>
+        
+        <!-- Camera Preview -->
+        <div class="camera-container" id="camera-container">
+            <video class="camera-preview" id="camera-preview" autoplay playsinline></video>
+            <canvas id="photo-canvas" style="display:none;"></canvas>
+            
+            <!-- Recording Timer - DIUBAH SEPERTI TIKTOK -->
+            <div class="recording-timer" id="recording-timer">
+                <span class="timer-dot"></span>
+                <span id="timer-display">00:00</span>
+            </div>
+            
+            <!-- Camera Controls - EDIT: DIPINDAH DAN DIUBAH -->
+            <div class="camera-controls">
+                <!-- EDIT: Mode Selector dipindah ke atas tombol potret -->
+                <div class="mode-selector">
+                    <button class="mode-btn active" id="photo-mode-btn" onclick="switchMode('photo')">FOTO</button>
+                    <button class="mode-btn" id="video-mode-btn" onclick="switchMode('video')">VIDEO</button>
+                </div>
+                
+                <!-- EDIT: Container untuk tombol shutter dan galeri -->
+                <div class="shutter-btn-container">
+                    <!-- Tombol kamera di tengah -->
+                    <button class="shutter-btn" id="shutter-btn" onclick="captureMedia()">
+                        <!-- Tombol akan berubah tergantung mode -->
+                    </button>
+                    
+                    <!-- Tombol galeri di kanan -->
+                    <div class="gallery-btn" onclick="openGallery()" id="gallery-btn">
+                        <span>🖼️</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Preview After Capture - DITAMBAH TOMBOL EDIT -->
+        <div class="capture-preview" id="capture-preview">
+            <!-- EDIT: Tombol Edit di kanan atas -->
+            <button class="edit-top-button" onclick="openEditPage()">
+                <span>✏️</span>
+                <span>Edit</span>
+            </button>
+            
+            <div class="preview-media-container">
+                <img id="preview-image" class="preview-media" style="display:none;">
+                <video id="preview-video" class="preview-media" controls style="display:none;"></video>
+            </div>
+            <div class="preview-controls">
+                <button class="preview-btn retake-btn" onclick="retakeMedia()">Ambil Ulang</button>
+                <button class="preview-btn upload-btn" onclick="proceedToUpload()">Lanjutkan</button>
+            </div>
+        </div>
+        
+        <!-- BARU: Halaman Editing seperti Snack Video -->
+        <div class="edit-page" id="edit-page">
+            <div class="edit-header">
+                <button class="back-btn" onclick="backToPreview()">←</button>
+                <h2 class="page-title">Edit Konten</h2>
+                <button class="save-btn" onclick="saveEdit()">SIMPAN</button>
+            </div>
+            
+            <div class="edit-container">
+                <div class="edit-preview" id="edit-preview">
+                    <!-- Media yang diedit akan ditampilkan di sini -->
+                    <img id="edit-preview-image" class="edit-preview-media" style="display:none;">
+                    <video id="edit-preview-video" class="edit-preview-media" controls style="display:none;"></video>
+                </div>
+                
+                <div class="edit-tools">
+                    <div class="edit-tools-title">Alat Edit</div>
+                    
+                    <!-- Filter -->
+                    <div class="edit-tool-category">
+                        <h4><span class="icon">🎨</span> Filter</h4>
+                        <div class="filter-preview" id="filter-preview">
+                            <!-- Filter akan ditambahkan via JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Efek -->
+                    <div class="edit-tool-category">
+                        <h4><span class="icon">✨</span> Efek</h4>
+                        <div class="tool-buttons">
+                            <button class="tool-button" onclick="applyEffect('brightness')">Kecerahan</button>
+                            <button class="tool-button" onclick="applyEffect('contrast')">Kontras</button>
+                            <button class="tool-button" onclick="applyEffect('saturation')">Saturasi</button>
+                            <button class="tool-button" onclick="applyEffect('blur')">Blur</button>
+                            <button class="tool-button" onclick="applyEffect('grayscale')">Grayscale</button>
+                            <button class="tool-button" onclick="applyEffect('sepia')">Sepia</button>
+                        </div>
+                        <div class="slider-container" id="effect-slider-container" style="display:none;">
+                            <div class="slider-label">
+                                <span id="effect-name">Kecerahan</span>
+                                <span class="slider-value" id="effect-value">100%</span>
+                            </div>
+                            <input type="range" min="0" max="200" value="100" class="edit-slider" id="effect-slider" oninput="updateEffectValue(this.value)">
+                        </div>
+                    </div>
+                    
+                    <!-- Stiker -->
+                    <div class="edit-tool-category">
+                        <h4><span class="icon">🦄</span> Stiker</h4>
+                        <div class="sticker-grid" id="sticker-grid">
+                            <!-- Stiker akan ditambahkan via JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Teks -->
+                    <div class="edit-tool-category">
+                        <h4><span class="icon">✏️</span> Tambah Teks</h4>
+                        <div class="text-input-container">
+                            <input type="text" class="text-input" id="text-input" placeholder="Ketik teks di sini...">
+                            <div class="text-style-buttons">
+                                <button class="text-style-button active" onclick="changeTextStyle('normal')">Normal</button>
+                                <button class="text-style-button" onclick="changeTextStyle('bold')">Bold</button>
+                                <button class="text-style-button" onclick="changeTextStyle('italic')">Italic</button>
+                            </div>
+                            <div class="color-palette" id="color-palette">
+                                <!-- Warna akan ditambahkan via JavaScript -->
+                            </div>
+                            <button class="tool-button" style="margin-top: 10px; width: 100%;" onclick="addTextOverlay()">Tambah Teks</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Crop & Rotate -->
+                    <div class="edit-tool-category">
+                        <h4><span class="icon">📐</span> Crop & Rotate</h4>
+                        <div class="tool-buttons">
+                            <button class="tool-button" onclick="cropMedia()">Crop</button>
+                            <button class="tool-button" onclick="rotateMedia(90)">Putar 90°</button>
+                            <button class="tool-button" onclick="rotateMedia(-90)">Putar -90°</button>
+                            <button class="tool-button" onclick="flipMedia()">Flip</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Upload Form -->
+        <div class="upload-form" id="upload-form">
+            <div class="form-header">
+                <button class="back-btn" onclick="backToPreview()">←</button>
+                <h2 class="page-title">Unggah Konten</h2>
+                <div></div>
+            </div>
+            
+            <div class="form-content">
+                <div class="form-preview" id="form-preview">
+                    <!-- Preview media akan ditampilkan di sini -->
+                </div>
+                
+                <textarea class="caption-input" id="caption-input" placeholder="Tambahkan keterangan..."></textarea>
+                
+                <div class="upload-options">
+                    <div class="option-toggle">
+                        <div class="option-label">
+                            <div class="option-name">Tampilkan Lokasi</div>
+                            <div class="option-desc">Tambahkan lokasi ke postingan Anda</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="location-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="option-toggle">
+                        <div class="option-label">
+                            <div class="option-name">Izinkan Komentar</div>
+                            <div class="option-desc">Orang lain dapat mengomentari postingan Anda</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="comments-toggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="option-toggle">
+                        <div class="option-label">
+                            <div class="option-name">Bagikan ke Facebook</div>
+                            <div class="option-desc">Posting juga ke Facebook</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="facebook-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button class="cancel-btn" onclick="cancelUpload()">Batal</button>
+                <button class="post-btn" onclick="uploadPost()">Unggah</button>
+            </div>
+        </div>
+        
+        <!-- BARU: Camera Permission Message - DIUBAH -->
+        <div class="camera-permission-message" id="camera-permission-message" style="display:none;">
+            <div class="camera-permission-icon">📸</div>
+            <div class="camera-permission-title">Izinkan Akses Kamera</div>
+            <div class="camera-permission-text">
+                Aplikasi XC Xavier membutuhkan akses kamera untuk mengambil foto dan merekam video konten Anda.
+            </div>
+            
+            <div class="camera-permission-steps">
+                <div class="permission-step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">
+                        <strong>Izinkan Akses Kamera</strong><br>
+                        Klik "Izinkan" ketika browser meminta izin kamera
+                    </div>
+                </div>
+                <div class="permission-step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">
+                        <strong>Pilih Kamera Depan/Belakang</strong><br>
+                        Pilih kamera yang ingin digunakan
+                    </div>
+                </div>
+                <div class="permission-step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">
+                        <strong>Mulai Membuat Konten</strong><br>
+                        Tekan tombol untuk mengambil foto atau merekam video
+                    </div>
+                </div>
+            </div>
+            
+            <div class="camera-permission-buttons">
+                <button class="permission-btn primary" onclick="requestCameraPermission()">
+                    Izinkan Kamera
+                </button>
+                <button class="permission-btn secondary" onclick="closeUploadPage()">
+                    Batal
+                </button>
+            </div>
+            
+            <p style="color: #999; font-size: 12px; margin-top: 20px;">
+                Jika sebelumnya menolak, buka pengaturan browser untuk mengizinkan akses kamera
+            </p>
+        </div>
+    </div>
+
+    <!-- Input file tersembunyi untuk galeri -->
+    <input type="file" id="gallery-input" accept="image/*,video/*" multiple style="display:none;">
+
+    <!-- BARU: Halaman Profil Pengguna -->
+    <div class="user-profile-page" id="user-profile-page" style="display:none;">
+        <div class="page-header">
+            <button class="back-btn" onclick="showHome()">←</button>
+            <h1 class="page-title">Profil</h1>
+        </div>
+
+        <div class="profile-header">
+            <img src="https://via.placeholder.com/80/927dfc/ffffff?text=U" alt="Foto Profil" id="user-profile-page-pic" class="profile-pic">
+            <div class="profile-info">
+                <div class="profile-name" id="user-profile-page-name">Nama Pengguna</div>
+                <div class="profile-username" id="user-profile-page-username">@username</div>
+                
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-count" id="posts-count">0</div>
+                        <div class="stat-label">Postingan</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-count" id="followers-count">0</div>
+                        <div class="stat-label">Pengikut</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-count" id="following-count">0</div>
+                        <div class="stat-label">Mengikuti</div>
+                    </div>
+                </div>
+                
+                <div class="profile-actions" id="profile-actions">
+                    <!-- Tombol akan ditampilkan berdasarkan apakah ini profil sendiri atau profil orang lain -->
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-tabs">
+            <div class="profile-tab active" onclick="switchProfileTab('posts')">Postingan</div>
+            <div class="profile-tab" onclick="switchProfileTab('liked')">Disukai</div>
+        </div>
+
+        <div class="profile-posts" id="profile-posts-container">
+            <!-- Postingan pengguna akan ditampilkan di sini -->
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
