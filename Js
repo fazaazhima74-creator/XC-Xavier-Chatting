@@ -19,10 +19,33 @@ let mediaRecorder = null;
 let recordedChunks = [];
 let recordingTimer = null;
 let recordingSeconds = 0;
+let isRecording = false; // Menandakan apakah sedang merekam
 let currentMedia = null; // Untuk menyimpan media yang ditangkap
 let currentMediaType = null; // 'photo' atau 'video'
 let currentMediaURL = null; // URL untuk media yang ditangkap
-let isRecording = false;
+
+// Variabel untuk sistem editing
+let currentEditCanvas = null;
+let currentEditContext = null;
+let currentEditImage = null;
+let currentEffect = null;
+let currentEffectValue = 100;
+let textOverlays = [];
+let stickerOverlays = [];
+let currentTextStyle = 'normal';
+let currentTextColor = '#ffffff';
+let activeFilter = 'none';
+let filters = {
+    'none': 'none',
+    'brightness': 'brightness(100%)',
+    'contrast': 'contrast(100%)',
+    'saturate': 'saturate(100%)',
+    'grayscale': 'grayscale(0%)',
+    'sepia': 'sepia(0%)',
+    'invert': 'invert(0%)',
+    'hue-rotate': 'hue-rotate(0deg)',
+    'blur': 'blur(0px)'
+};
 
 // Coba muat data pengguna dari localStorage saat startup
 let currentUser = loadUserData(); 
@@ -889,23 +912,82 @@ function showUploadPage() {
     // Reset ke mode foto
     switchMode('photo');
     
-    // Start camera
-    startCamera();
+    // Cek izin kamera
+    checkCameraPermission();
     
     // Update navigasi bawah
     updateBottomNav('upload');
 }
 
+// BARU: Fungsi untuk memeriksa izin kamera
+async function checkCameraPermission() {
+    try {
+        // Sembunyikan pesan izin terlebih dahulu
+        document.getElementById('camera-permission-message').style.display = 'none';
+        
+        // Tampilkan kamera
+        document.getElementById('camera-container').style.display = 'block';
+        
+        // Coba mulai kamera
+        startCamera();
+        
+    } catch (error) {
+        console.error('Error checking camera permission:', error);
+        // Tampilkan pesan izin jika terjadi error
+        showCameraPermissionMessage(true);
+    }
+}
+
+// BARU: Fungsi untuk menampilkan pesan izin kamera - DIUBAH
+function showCameraPermissionMessage(isDenied = false) {
+    const cameraContainer = document.getElementById('camera-container');
+    const permissionMessage = document.getElementById('camera-permission-message');
+    
+    if (isDenied) {
+        // Update pesan untuk izin yang ditolak
+        permissionMessage.querySelector('.camera-permission-title').textContent = 'Akses Kamera Ditolak';
+        permissionMessage.querySelector('.camera-permission-text').textContent = 
+            'Akses kamera sebelumnya ditolak. Untuk menggunakan fitur ini, Anda perlu mengizinkan akses kamera di pengaturan browser.';
+        
+        // Update tombol
+        const primaryBtn = permissionMessage.querySelector('.permission-btn.primary');
+        primaryBtn.textContent = 'Buka Pengaturan';
+        primaryBtn.onclick = function() {
+            // Buka pengaturan browser (hanya bisa dilakukan manual)
+            alert('Untuk mengizinkan kamera:\n1. Buka pengaturan browser\n2. Cari "Situs" atau "Izin"\n3. Temukan situs ini\n4. Izinkan akses kamera');
+        };
+    }
+    
+    // Sembunyikan kamera, tampilkan pesan
+    cameraContainer.style.display = 'none';
+    permissionMessage.style.display = 'flex';
+}
+
+// BARU: Fungsi untuk meminta izin kamera
+function requestCameraPermission() {
+    // Sembunyikan pesan izin
+    document.getElementById('camera-permission-message').style.display = 'none';
+    
+    // Tampilkan kamera kembali
+    document.getElementById('camera-container').style.display = 'block';
+    
+    // Coba mulai kamera
+    startCamera();
+}
+
 // BARU: Fungsi untuk menutup halaman upload
 function closeUploadPage() {
-    // Stop camera
+    // Stop kamera
     stopCamera();
+    
+    // Reset semua variabel editing
+    resetEditing();
     
     // Kembali ke home
     showHome();
 }
 
-// BARU: Fungsi untuk mengganti mode (foto/video)
+// BARU: Fungsi untuk mengganti mode (foto/video) - DIUBAH
 function switchMode(mode) {
     currentMode = mode;
     
@@ -928,31 +1010,24 @@ function switchMode(mode) {
     // Sembunyikan timer recording jika ada
     document.getElementById('recording-timer').style.display = 'none';
     
-    // Reset recording state
-    isRecording = false;
-    recordedChunks = [];
-    
     // Stop recording jika sedang merekam
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
+    if (isRecording && mediaRecorder && mediaRecorder.state === 'recording') {
+        stopRecording();
+    }
+    
+    // Restart kamera dengan mode yang sesuai
+    if (currentStream) {
+        stopCamera();
+        setTimeout(() => startCamera(), 300);
     }
 }
 
-// BARU: Fungsi untuk memulai kamera - DIPERBAIKI DENGAN HANDLING PERMISSION
+// BARU: Fungsi untuk memulai kamera - DIPERBAIKI
 async function startCamera() {
     try {
         // Hentikan stream yang ada
         if (currentStream) {
             currentStream.getTracks().forEach(track => track.stop());
-        }
-        
-        // Cek apakah kamera sudah diizinkan
-        const cameraPermission = await navigator.permissions.query({ name: 'camera' });
-        
-        if (cameraPermission.state === 'denied') {
-            // Jika izin ditolak, tampilkan pesan dan minta pengguna ke pengaturan
-            showCameraPermissionMessage();
-            return;
         }
         
         // Dapatkan akses kamera
@@ -971,19 +1046,38 @@ async function startCamera() {
         const preview = document.getElementById('camera-preview');
         preview.srcObject = currentStream;
         
+        // Sembunyikan pesan izin jika ada
+        document.getElementById('camera-permission-message').style.display = 'none';
+        document.getElementById('camera-container').style.display = 'block';
+        
         // Siapkan MediaRecorder untuk mode video
         if (currentMode === 'video') {
-            mediaRecorder = new MediaRecorder(currentStream);
+            const options = { mimeType: 'video/webm; codecs=vp9,opus' };
+            
+            // Cek dukungan untuk format video
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                options.mimeType = 'video/webm; codecs=vp8,opus';
+            }
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                options.mimeType = 'video/webm';
+            }
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                options.mimeType = 'video/mp4';
+            }
+            
+            mediaRecorder = new MediaRecorder(currentStream, options);
             
             mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
+                if (event.data && event.data.size > 0) {
                     recordedChunks.push(event.data);
                 }
             };
             
             mediaRecorder.onstop = () => {
                 // Buat blob dari chunks
-                const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+                const blob = new Blob(recordedChunks, { 
+                    type: mediaRecorder.mimeType 
+                });
                 currentMediaURL = URL.createObjectURL(blob);
                 currentMediaType = 'video';
                 
@@ -995,62 +1089,19 @@ async function startCamera() {
     } catch (error) {
         console.error('Error mengakses kamera:', error);
         
-        // Tampilkan pesan error
         if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-            // Izin kamera ditolak
-            showCameraPermissionMessage();
+            // Izin kamera ditolak, tampilkan pesan
+            showCameraPermissionMessage(true);
         } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
             // Kamera tidak ditemukan
             alert('Kamera tidak ditemukan di perangkat Anda.');
+            closeUploadPage();
         } else {
+            // Error lainnya
             alert('Tidak dapat mengakses kamera. Error: ' + error.message);
+            closeUploadPage();
         }
-        
-        // Fallback: tampilkan gambar placeholder
-        const preview = document.getElementById('camera-preview');
-        preview.srcObject = null;
-        preview.style.background = '#000';
     }
-}
-
-// BARU: Fungsi untuk menampilkan pesan izin kamera
-function showCameraPermissionMessage() {
-    // Tampilkan pesan yang mengarahkan pengguna ke pengaturan
-    const permissionMessage = document.createElement('div');
-    permissionMessage.style.cssText = `
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 30px;
-        border-radius: 15px;
-        text-align: center;
-        z-index: 100;
-        max-width: 80%;
-        width: 90%;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    `;
-    
-    permissionMessage.innerHTML = `
-        <h3 style="margin-bottom: 15px; color: #ff6b6b;">⚠️ Akses Kamera Ditolak</h3>
-        <p style="margin-bottom: 15px;">Aplikasi XC Xavier membutuhkan akses kamera untuk mengambil foto dan video.</p>
-        <p style="margin-bottom: 20px; font-size: 14px; color: #ccc;">Untuk mengizinkan akses kamera:</p>
-        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
-            <p style="margin-bottom: 8px; font-size: 14px;">1. Buka <strong>Pengaturan</strong> perangkat Anda</p>
-            <p style="margin-bottom: 8px; font-size: 14px;">2. Cari <strong>Aplikasi</strong> atau <strong>Izin Aplikasi</strong></p>
-            <p style="margin-bottom: 8px; font-size: 14px;">3. Temukan <strong>XC Xavier</strong></p>
-            <p style="font-size: 14px;">4. Aktifkan izin <strong>Kamera</strong></p>
-        </div>
-        <p style="margin-bottom: 20px; font-size: 14px; color: #ccc;">Setelah mengizinkan, kembali ke aplikasi dan coba lagi.</p>
-        <div style="display: flex; gap: 10px; justify-content: center;">
-            <button onclick="this.parentElement.parentElement.remove(); startCamera();" style="padding: 12px 24px; background: var(--accent-purple); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Coba Lagi</button>
-            <button onclick="this.parentElement.parentElement.remove(); closeUploadPage();" style="padding: 12px 24px; background: rgba(255,255,255,0.1); color: white; border: 1px solid white; border-radius: 8px; cursor: pointer; font-weight: 600;">Batal</button>
-        </div>
-    `;
-    
-    document.querySelector('.camera-container').appendChild(permissionMessage);
 }
 
 // BARU: Fungsi untuk menghentikan kamera
@@ -1061,10 +1112,19 @@ function stopCamera() {
     }
     
     // Stop recording jika sedang merekam
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
+    if (isRecording && mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
-        clearInterval(recordingTimer);
+        isRecording = false;
     }
+    
+    // Hentikan timer recording
+    if (recordingTimer) {
+        clearInterval(recordingTimer);
+        recordingTimer = null;
+    }
+    
+    // Reset timer display
+    document.getElementById('recording-timer').style.display = 'none';
 }
 
 // BARU: Fungsi untuk mengambil foto atau merekam video
@@ -1092,6 +1152,12 @@ function capturePhoto() {
         return;
     }
     
+    // Pastikan video siap
+    if (preview.videoWidth === 0 || preview.videoHeight === 0) {
+        alert('Kamera belum siap. Tunggu sebentar...');
+        return;
+    }
+    
     // Atur ukuran canvas sesuai dengan video
     canvas.width = preview.videoWidth;
     canvas.height = preview.videoHeight;
@@ -1115,59 +1181,73 @@ function capturePhoto() {
 
 // BARU: Fungsi untuk mulai merekam video
 function startRecording() {
-    if (!mediaRecorder) return;
+    if (!mediaRecorder) {
+        alert('MediaRecorder tidak tersedia. Pastikan browser mendukung rekaman video.');
+        return;
+    }
     
     // Reset chunks
     recordedChunks = [];
     
     // Mulai recording
-    mediaRecorder.start();
-    isRecording = true;
-    
-    // Update tombol shutter
-    const shutterBtn = document.getElementById('shutter-btn');
-    shutterBtn.innerHTML = '<span style="font-size: 24px;">⏹️</span>';
-    shutterBtn.classList.add('recording');
-    
-    // Mulai timer
-    recordingSeconds = 0;
-    document.getElementById('recording-timer').style.display = 'block';
-    updateRecordingTimer();
-    
-    recordingTimer = setInterval(() => {
-        recordingSeconds++;
+    try {
+        mediaRecorder.start();
+        isRecording = true;
+        
+        // Update tombol shutter
+        const shutterBtn = document.getElementById('shutter-btn');
+        shutterBtn.innerHTML = '<span style="font-size: 24px;">⏹️</span>';
+        shutterBtn.classList.add('recording');
+        
+        // Mulai timer
+        recordingSeconds = 0;
+        const timerElement = document.getElementById('recording-timer');
+        timerElement.style.display = 'block';
         updateRecordingTimer();
         
-        // Batasi recording maksimal 60 detik
-        if (recordingSeconds >= 60) {
-            stopRecording();
-        }
-    }, 1000);
+        recordingTimer = setInterval(() => {
+            recordingSeconds++;
+            updateRecordingTimer();
+            
+            // Batasi recording maksimal 60 detik
+            if (recordingSeconds >= 60) {
+                stopRecording();
+            }
+        }, 1000);
+    } catch (error) {
+        console.error('Error starting recording:', error);
+        alert('Gagal memulai rekaman: ' + error.message);
+    }
 }
 
 // BARU: Fungsi untuk menghentikan recording
 function stopRecording() {
     if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
     
-    // Hentikan recording
-    mediaRecorder.stop();
-    isRecording = false;
-    
-    // Hentikan timer
-    clearInterval(recordingTimer);
-    document.getElementById('recording-timer').style.display = 'none';
-    
-    // Update tombol shutter
-    const shutterBtn = document.getElementById('shutter-btn');
-    shutterBtn.innerHTML = '<span style="font-size: 24px;">⏺️</span>';
-    shutterBtn.classList.remove('recording');
+    try {
+        // Hentikan recording
+        mediaRecorder.stop();
+        isRecording = false;
+        
+        // Hentikan timer
+        clearInterval(recordingTimer);
+        recordingTimer = null;
+        document.getElementById('recording-timer').style.display = 'none';
+        
+        // Update tombol shutter
+        const shutterBtn = document.getElementById('shutter-btn');
+        shutterBtn.innerHTML = '<span style="font-size: 24px;">⏺️</span>';
+        shutterBtn.classList.remove('recording');
+    } catch (error) {
+        console.error('Error stopping recording:', error);
+    }
 }
 
-// BARU: Fungsi untuk memperbarui timer recording
+// BARU: Fungsi untuk memperbarui timer recording - DIUBAH SEPERTI TIKTOK
 function updateRecordingTimer() {
     const minutes = Math.floor(recordingSeconds / 60).toString().padStart(2, '0');
     const seconds = (recordingSeconds % 60).toString().padStart(2, '0');
-    document.getElementById('recording-timer').textContent = `${minutes}:${seconds}`;
+    document.getElementById('timer-display').textContent = `${minutes}:${seconds}`;
 }
 
 // BARU: Fungsi untuk menampilkan preview media yang ditangkap
@@ -1189,8 +1269,12 @@ function showMediaPreview() {
         const previewVideo = document.getElementById('preview-video');
         previewVideo.src = currentMediaURL;
         previewVideo.style.display = 'block';
+        previewVideo.controls = true;
         document.getElementById('preview-image').style.display = 'none';
     }
+    
+    // Reset editing
+    resetEditing();
 }
 
 // BARU: Fungsi untuk mengambil ulang media
@@ -1202,8 +1286,608 @@ function retakeMedia() {
     document.querySelector('.camera-container').style.display = 'block';
     
     // Reset media
-    currentMediaURL = null;
-    currentMediaType = null;
+    if (currentMediaURL) {
+        URL.revokeObjectURL(currentMediaURL);
+        currentMediaURL = null;
+        currentMediaType = null;
+    }
+    
+    // Reset recording
+    recordedChunks = [];
+    recordingSeconds = 0;
+    isRecording = false;
+    
+    // Reset editing
+    resetEditing();
+}
+
+// ==============================================
+// SISTEM EDITING SEPERTI SNACK VIDEO (BARU)
+// ==============================================
+
+// BARU: Fungsi untuk membuka halaman editing
+function openEditPage() {
+    // Sembunyikan preview capture
+    document.getElementById('capture-preview').style.display = 'none';
+    
+    // Tampilkan halaman edit
+    document.getElementById('edit-page').style.display = 'flex';
+    
+    // Setup canvas untuk editing
+    setupEditingCanvas();
+    
+    // Load alat-alat editing
+    loadEditingTools();
+    
+    // Tampilkan media di preview edit
+    if (currentMediaType === 'photo') {
+        const editPreview = document.getElementById('edit-preview-image');
+        editPreview.src = currentMediaURL;
+        editPreview.style.display = 'block';
+        document.getElementById('edit-preview-video').style.display = 'none';
+    } else {
+        const editPreview = document.getElementById('edit-preview-video');
+        editPreview.src = currentMediaURL;
+        editPreview.style.display = 'block';
+        editPreview.controls = true;
+        document.getElementById('edit-preview-image').style.display = 'none';
+    }
+}
+
+// BARU: Fungsi untuk setup canvas editing
+function setupEditingCanvas() {
+    if (currentMediaType === 'photo') {
+        // Buat canvas untuk editing foto
+        currentEditCanvas = document.createElement('canvas');
+        currentEditContext = currentEditCanvas.getContext('2d');
+        
+        // Load gambar ke canvas
+        currentEditImage = new Image();
+        currentEditImage.onload = function() {
+            currentEditCanvas.width = currentEditImage.naturalWidth || currentEditImage.width;
+            currentEditCanvas.height = currentEditImage.naturalHeight || currentEditImage.height;
+            currentEditContext.drawImage(currentEditImage, 0, 0);
+        };
+        currentEditImage.src = currentMediaURL;
+    }
+}
+
+// BARU: Fungsi untuk memuat alat-alat editing
+function loadEditingTools() {
+    // Load filter
+    loadFilters();
+    
+    // Load stiker
+    loadStickers();
+    
+    // Load warna teks
+    loadTextColors();
+}
+
+// BARU: Fungsi untuk memuat filter
+function loadFilters() {
+    const filterPreview = document.getElementById('filter-preview');
+    const filterList = [
+        { name: 'Normal', filter: 'none' },
+        { name: 'Bright', filter: 'brightness(120%) contrast(110%)' },
+        { name: 'Warm', filter: 'sepia(30%) brightness(110%)' },
+        { name: 'Cool', filter: 'hue-rotate(180deg) saturate(120%)' },
+        { name: 'Vintage', filter: 'sepia(50%) contrast(120%)' },
+        { name: 'B&W', filter: 'grayscale(100%)' },
+        { name: 'Vibrant', filter: 'saturate(150%) contrast(120%)' },
+        { name: 'Soft', filter: 'blur(1px) brightness(105%)' }
+    ];
+    
+    filterPreview.innerHTML = '';
+    
+    filterList.forEach((filter, index) => {
+        const filterItem = document.createElement('div');
+        filterItem.className = 'filter-item';
+        if (index === 0) filterItem.classList.add('active');
+        
+        // Buat preview filter
+        const img = document.createElement('div');
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.background = 'linear-gradient(45deg, #927dfc, #ff6b6b)';
+        img.style.filter = filter.filter;
+        
+        filterItem.appendChild(img);
+        
+        const filterName = document.createElement('div');
+        filterName.className = 'filter-name';
+        filterName.textContent = filter.name;
+        
+        filterItem.appendChild(filterName);
+        
+        filterItem.onclick = () => {
+            // Hapus active dari semua filter
+            document.querySelectorAll('.filter-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Tambah active ke filter yang dipilih
+            filterItem.classList.add('active');
+            
+            // Terapkan filter
+            applyFilter(filter.filter);
+        };
+        
+        filterPreview.appendChild(filterItem);
+    });
+}
+
+// BARU: Fungsi untuk memuat stiker
+function loadStickers() {
+    const stickerGrid = document.getElementById('sticker-grid');
+    const stickers = ['😊', '😍', '😂', '🥰', '😎', '🤩', '🎉', '🌟', '💖', '🔥', '✨', '🎈'];
+    
+    stickerGrid.innerHTML = '';
+    
+    stickers.forEach(sticker => {
+        const stickerItem = document.createElement('div');
+        stickerItem.className = 'sticker-item';
+        stickerItem.textContent = sticker;
+        
+        stickerItem.onclick = () => {
+            addStickerOverlay(sticker);
+        };
+        
+        stickerGrid.appendChild(stickerItem);
+    });
+}
+
+// BARU: Fungsi untuk memuat warna teks
+function loadTextColors() {
+    const colorPalette = document.getElementById('color-palette');
+    const colors = [
+        '#ffffff', '#000000', '#927dfc', '#ff6b6b', '#4CAF50', 
+        '#2196F3', '#FF9800', '#9C27B0', '#FFEB3B', '#00BCD4'
+    ];
+    
+    colorPalette.innerHTML = '';
+    
+    colors.forEach((color, index) => {
+        const colorItem = document.createElement('div');
+        colorItem.className = 'color-item';
+        if (index === 0) colorItem.classList.add('active');
+        colorItem.style.backgroundColor = color;
+        
+        colorItem.onclick = () => {
+            // Hapus active dari semua warna
+            document.querySelectorAll('.color-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Tambah active ke warna yang dipilih
+            colorItem.classList.add('active');
+            
+            // Set warna teks
+            currentTextColor = color;
+        };
+        
+        colorPalette.appendChild(colorItem);
+    });
+}
+
+// BARU: Fungsi untuk menerapkan filter
+function applyFilter(filter) {
+    activeFilter = filter;
+    
+    if (currentMediaType === 'photo') {
+        const editPreview = document.getElementById('edit-preview-image');
+        editPreview.style.filter = filter;
+    } else {
+        const editPreview = document.getElementById('edit-preview-video');
+        editPreview.style.filter = filter;
+    }
+}
+
+// BARU: Fungsi untuk menerapkan efek
+function applyEffect(effect) {
+    currentEffect = effect;
+    
+    // Tampilkan slider efek
+    const sliderContainer = document.getElementById('effect-slider-container');
+    const effectName = document.getElementById('effect-name');
+    const effectSlider = document.getElementById('effect-slider');
+    
+    // Set nama efek
+    const effectNames = {
+        'brightness': 'Kecerahan',
+        'contrast': 'Kontras',
+        'saturation': 'Saturasi',
+        'blur': 'Blur',
+        'grayscale': 'Grayscale',
+        'sepia': 'Sepia'
+    };
+    
+    effectName.textContent = effectNames[effect] || effect;
+    
+    // Set range slider berdasarkan efek
+    let min = 0, max = 200, value = 100;
+    if (effect === 'blur') {
+        min = 0; max = 20; value = 0;
+    } else if (effect === 'grayscale' || effect === 'sepia') {
+        min = 0; max = 100; value = 0;
+    }
+    
+    effectSlider.min = min;
+    effectSlider.max = max;
+    effectSlider.value = value;
+    
+    // Update nilai
+    updateEffectValue(value);
+    
+    // Tampilkan slider
+    sliderContainer.style.display = 'block';
+    
+    // Update preview efek
+    updateEffectPreview();
+}
+
+// BARU: Fungsi untuk memperbarui nilai efek
+function updateEffectValue(value) {
+    currentEffectValue = value;
+    document.getElementById('effect-value').textContent = value + (currentEffect === 'blur' ? 'px' : '%');
+    
+    // Update preview efek
+    updateEffectPreview();
+}
+
+// BARU: Fungsi untuk memperbarui preview efek
+function updateEffectPreview() {
+    if (!currentEffect) return;
+    
+    let filterValue = '';
+    
+    switch (currentEffect) {
+        case 'brightness':
+            filterValue = `brightness(${currentEffectValue}%)`;
+            break;
+        case 'contrast':
+            filterValue = `contrast(${currentEffectValue}%)`;
+            break;
+        case 'saturation':
+            filterValue = `saturate(${currentEffectValue}%)`;
+            break;
+        case 'blur':
+            filterValue = `blur(${currentEffectValue}px)`;
+            break;
+        case 'grayscale':
+            filterValue = `grayscale(${currentEffectValue}%)`;
+            break;
+        case 'sepia':
+            filterValue = `sepia(${currentEffectValue}%)`;
+            break;
+    }
+    
+    // Terapkan filter ke preview
+    if (currentMediaType === 'photo') {
+        const editPreview = document.getElementById('edit-preview-image');
+        editPreview.style.filter = `${activeFilter} ${filterValue}`;
+    } else {
+        const editPreview = document.getElementById('edit-preview-video');
+        editPreview.style.filter = `${activeFilter} ${filterValue}`;
+    }
+}
+
+// BARU: Fungsi untuk menambahkan teks overlay
+function addTextOverlay() {
+    const textInput = document.getElementById('text-input');
+    const text = textInput.value.trim();
+    
+    if (!text) {
+        alert('Masukkan teks terlebih dahulu!');
+        return;
+    }
+    
+    const editPreview = document.getElementById('edit-preview');
+    
+    // Buat element teks overlay
+    const textOverlay = document.createElement('div');
+    textOverlay.className = 'text-overlay';
+    textOverlay.textContent = text;
+    textOverlay.style.color = currentTextColor;
+    textOverlay.style.fontSize = '24px';
+    textOverlay.style.fontWeight = currentTextStyle === 'bold' ? 'bold' : 'normal';
+    textOverlay.style.fontStyle = currentTextStyle === 'italic' ? 'italic' : 'normal';
+    textOverlay.style.left = '50%';
+    textOverlay.style.top = '50%';
+    textOverlay.style.transform = 'translate(-50%, -50%)';
+    
+    // Buat tombol hapus
+    const deleteBtn = document.createElement('div');
+    deleteBtn.className = 'delete-overlay';
+    deleteBtn.textContent = '×';
+    deleteBtn.onclick = function(e) {
+        e.stopPropagation();
+        textOverlay.remove();
+        textOverlays = textOverlays.filter(t => t !== textOverlay);
+    };
+    
+    textOverlay.appendChild(deleteBtn);
+    
+    // Tambahkan event untuk drag
+    makeDraggable(textOverlay);
+    
+    editPreview.appendChild(textOverlay);
+    textOverlays.push(textOverlay);
+    
+    // Reset input
+    textInput.value = '';
+}
+
+// BARU: Fungsi untuk mengubah style teks
+function changeTextStyle(style) {
+    currentTextStyle = style;
+    
+    // Update tombol style
+    document.querySelectorAll('.text-style-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+}
+
+// BARU: Fungsi untuk menambahkan stiker overlay
+function addStickerOverlay(sticker) {
+    const editPreview = document.getElementById('edit-preview');
+    
+    // Buat element stiker overlay
+    const stickerOverlay = document.createElement('div');
+    stickerOverlay.className = 'sticker-overlay';
+    stickerOverlay.textContent = sticker;
+    stickerOverlay.style.left = '50%';
+    stickerOverlay.style.top = '50%';
+    stickerOverlay.style.transform = 'translate(-50%, -50%)';
+    
+    // Buat tombol hapus
+    const deleteBtn = document.createElement('div');
+    deleteBtn.className = 'delete-overlay';
+    deleteBtn.textContent = '×';
+    deleteBtn.onclick = function(e) {
+        e.stopPropagation();
+        stickerOverlay.remove();
+        stickerOverlays = stickerOverlays.filter(s => s !== stickerOverlay);
+    };
+    
+    stickerOverlay.appendChild(deleteBtn);
+    
+    // Tambahkan event untuk drag
+    makeDraggable(stickerOverlay);
+    
+    editPreview.appendChild(stickerOverlay);
+    stickerOverlays.push(stickerOverlay);
+}
+
+// BARU: Fungsi untuk membuat element bisa di-drag
+function makeDraggable(element) {
+    let isDragging = false;
+    let offsetX, offsetY;
+    
+    element.onmousedown = function(e) {
+        isDragging = true;
+        offsetX = e.clientX - element.offsetLeft;
+        offsetY = e.clientY - element.offsetTop;
+        element.style.zIndex = '1000';
+        e.preventDefault();
+    };
+    
+    document.onmousemove = function(e) {
+        if (!isDragging) return;
+        
+        const parentRect = element.parentElement.getBoundingClientRect();
+        const x = e.clientX - offsetX - parentRect.left;
+        const y = e.clientY - offsetY - parentRect.top;
+        
+        // Batasi agar tidak keluar dari parent
+        const maxX = parentRect.width - element.offsetWidth;
+        const maxY = parentRect.height - element.offsetHeight;
+        
+        element.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+        element.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+    };
+    
+    document.onmouseup = function() {
+        isDragging = false;
+        element.style.zIndex = '10';
+    };
+    
+    // Support untuk touch devices
+    element.ontouchstart = function(e) {
+        isDragging = true;
+        const touch = e.touches[0];
+        offsetX = touch.clientX - element.offsetLeft;
+        offsetY = touch.clientY - element.offsetTop;
+        element.style.zIndex = '1000';
+        e.preventDefault();
+    };
+    
+    document.ontouchmove = function(e) {
+        if (!isDragging) return;
+        
+        const touch = e.touches[0];
+        const parentRect = element.parentElement.getBoundingClientRect();
+        const x = touch.clientX - offsetX - parentRect.left;
+        const y = touch.clientY - offsetY - parentRect.top;
+        
+        // Batasi agar tidak keluar dari parent
+        const maxX = parentRect.width - element.offsetWidth;
+        const maxY = parentRect.height - element.offsetHeight;
+        
+        element.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+        element.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+        
+        e.preventDefault();
+    };
+    
+    document.ontouchend = function() {
+        isDragging = false;
+        element.style.zIndex = '10';
+    };
+}
+
+// BARU: Fungsi untuk crop media
+function cropMedia() {
+    alert('Fitur crop akan segera hadir!');
+    // Implementasi crop bisa ditambahkan di sini
+}
+
+// BARU: Fungsi untuk memutar media
+function rotateMedia(degrees) {
+    if (currentMediaType === 'photo') {
+        const editPreview = document.getElementById('edit-preview-image');
+        const currentTransform = editPreview.style.transform || '';
+        const currentRotation = currentTransform.match(/rotate\(([^)]+)\)/);
+        let currentDegrees = 0;
+        
+        if (currentRotation) {
+            currentDegrees = parseInt(currentRotation[1]);
+        }
+        
+        const newDegrees = currentDegrees + degrees;
+        editPreview.style.transform = `rotate(${newDegrees}deg)`;
+    } else {
+        alert('Rotasi hanya tersedia untuk foto');
+    }
+}
+
+// BARU: Fungsi untuk flip media
+function flipMedia() {
+    if (currentMediaType === 'photo') {
+        const editPreview = document.getElementById('edit-preview-image');
+        const currentTransform = editPreview.style.transform || '';
+        const currentScale = currentTransform.match(/scaleX\(([^)]+)\)/);
+        let currentFlip = 1;
+        
+        if (currentScale) {
+            currentFlip = parseFloat(currentScale[1]);
+        }
+        
+        const newFlip = currentFlip === 1 ? -1 : 1;
+        editPreview.style.transform = `scaleX(${newFlip})`;
+    } else {
+        const editPreview = document.getElementById('edit-preview-video');
+        const currentTransform = editPreview.style.transform || '';
+        const currentScale = currentTransform.match(/scaleX\(([^)]+)\)/);
+        let currentFlip = 1;
+        
+        if (currentScale) {
+            currentFlip = parseFloat(currentScale[1]);
+        }
+        
+        const newFlip = currentFlip === 1 ? -1 : 1;
+        editPreview.style.transform = `scaleX(${newFlip})`;
+    }
+}
+
+// BARU: Fungsi untuk menyimpan edit
+function saveEdit() {
+    if (currentMediaType === 'photo') {
+        // Untuk foto, kita perlu render semua overlay ke canvas
+        const editPreview = document.getElementById('edit-preview');
+        const editImage = document.getElementById('edit-preview-image');
+        
+        // Buat canvas untuk hasil akhir
+        const finalCanvas = document.createElement('canvas');
+        const finalContext = finalCanvas.getContext('2d');
+        
+        // Set ukuran canvas
+        finalCanvas.width = editImage.naturalWidth || editImage.width;
+        finalCanvas.height = editImage.naturalHeight || editImage.height;
+        
+        // Gambar gambar dengan filter
+        finalContext.filter = editImage.style.filter || 'none';
+        finalContext.drawImage(editImage, 0, 0, finalCanvas.width, finalCanvas.height);
+        
+        // Reset filter untuk overlay
+        finalContext.filter = 'none';
+        
+        // TODO: Render text dan stiker overlay ke canvas
+        // Ini adalah implementasi sederhana, untuk produksi perlu lebih kompleks
+        
+        // Simpan hasil ke currentMediaURL
+        currentMediaURL = finalCanvas.toDataURL('image/jpeg');
+        
+        alert('Edit berhasil disimpan!');
+    } else {
+        // Untuk video, kita tidak bisa mengedit dengan mudah di browser
+        alert('Edit video berhasil disimpan (simulasi)!');
+    }
+    
+    // Kembali ke preview
+    backToPreview();
+}
+
+// BARU: Fungsi untuk kembali ke preview dari edit
+function backToPreview() {
+    // Sembunyikan halaman edit
+    document.getElementById('edit-page').style.display = 'none';
+    
+    // Tampilkan preview capture
+    document.getElementById('capture-preview').style.display = 'flex';
+    
+    // Update preview dengan media yang sudah diedit
+    if (currentMediaType === 'photo') {
+        const previewImage = document.getElementById('preview-image');
+        previewImage.src = currentMediaURL;
+    } else {
+        const previewVideo = document.getElementById('preview-video');
+        previewVideo.src = currentMediaURL;
+    }
+}
+
+// BARU: Fungsi untuk reset semua variabel editing
+function resetEditing() {
+    currentEditCanvas = null;
+    currentEditContext = null;
+    currentEditImage = null;
+    currentEffect = null;
+    currentEffectValue = 100;
+    textOverlays = [];
+    stickerOverlays = [];
+    currentTextStyle = 'normal';
+    currentTextColor = '#ffffff';
+    activeFilter = 'none';
+    
+    // Reset semua overlay di edit preview
+    const editPreview = document.getElementById('edit-preview');
+    editPreview.querySelectorAll('.text-overlay, .sticker-overlay').forEach(el => el.remove());
+    
+    // Reset filter dan transform
+    if (currentMediaType === 'photo') {
+        const editImage = document.getElementById('edit-preview-image');
+        editImage.style.filter = 'none';
+        editImage.style.transform = 'none';
+    } else {
+        const editVideo = document.getElementById('edit-preview-video');
+        editVideo.style.filter = 'none';
+        editVideo.style.transform = 'none';
+    }
+    
+    // Reset slider
+    document.getElementById('effect-slider-container').style.display = 'none';
+    
+    // Reset filter active
+    document.querySelectorAll('.filter-item').forEach((item, index) => {
+        item.classList.remove('active');
+        if (index === 0) item.classList.add('active');
+    });
+    
+    // Reset text input
+    document.getElementById('text-input').value = '';
+    
+    // Reset color active
+    document.querySelectorAll('.color-item').forEach((item, index) => {
+        item.classList.remove('active');
+        if (index === 0) item.classList.add('active');
+    });
+    
+    // Reset text style buttons
+    document.querySelectorAll('.text-style-button').forEach((btn, index) => {
+        btn.classList.remove('active');
+        if (index === 0) btn.classList.add('active');
+    });
 }
 
 // BARU: Fungsi untuk melanjutkan ke form upload
@@ -1230,6 +1914,7 @@ function proceedToUpload() {
         const video = document.createElement('video');
         video.src = currentMediaURL;
         video.controls = true;
+        video.muted = true;
         video.style.width = '100%';
         video.style.height = '100%';
         video.style.objectFit = 'cover';
@@ -1288,6 +1973,9 @@ function cancelUpload() {
         currentMediaType = null;
     }
     
+    // Reset editing
+    resetEditing();
+    
     // Sembunyikan form
     document.getElementById('upload-form').style.display = 'none';
     
@@ -1303,9 +1991,6 @@ function uploadPost() {
         alert('Tidak ada media untuk diunggah!');
         return;
     }
-    
-    // Simpan data media (dalam implementasi nyata, ini akan diupload ke server)
-    // Untuk demo, kita simpan sebagai data URL di localStorage
     
     // Buat objek postingan baru
     const newPost = {
@@ -1337,6 +2022,9 @@ function uploadPost() {
     
     // Stop kamera
     stopCamera();
+    
+    // Reset editing
+    resetEditing();
     
     // Tampilkan beranda
     showHome();
@@ -1822,6 +2510,9 @@ function confirmLogoutAction() {
         currentMediaURL = null;
         currentMediaType = null;
     }
+    
+    // Reset editing
+    resetEditing();
     
     // Hapus data pengguna dari localStorage (hanya data sesi, bukan data akun)
     localStorage.removeItem(USER_STORAGE_KEY);
