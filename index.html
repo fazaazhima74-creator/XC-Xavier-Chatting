@@ -1160,29 +1160,30 @@
             flex-shrink: 0;
         }
         
-        /* EDIT: Mode Selector - FOTO/VIDIO - DIPINDAH KE ATAS TOMBOL POTRET */
+        /* Mode Selector - FOTO/VIDIO - DIPINDAH DAN DIUBAH */
         .camera-controls {
             position: absolute;
             bottom: 30px;
             left: 0;
             width: 100%;
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
             padding: 0 20px;
             box-sizing: border-box;
             z-index: 10;
-            gap: 10px;
+            gap: 20px;
         }
 
-        /* EDIT: Mode selector dipindah ke atas tombol potret */
         .mode-selector {
             display: flex;
             justify-content: center;
-            gap: 30px;
+            gap: 40px;
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
             width: 100%;
-            margin-bottom: 20px;
         }
 
         .mode-btn {
@@ -1228,16 +1229,7 @@
             transform: scaleX(-1); /* Mirror effect */
         }
 
-        /* EDIT: Camera Controls - DIUBAH dengan tombol potret di tengah dan galeri di kanan */
-        .shutter-btn-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            position: relative;
-            margin-bottom: 20px;
-        }
-
+        /* Camera Controls - DIUBAH (tombol reload dihapus) */
         .shutter-btn {
             width: 70px;
             height: 70px;
@@ -1249,12 +1241,14 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
-            position: relative;
-            z-index: 5;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 40px;
         }
 
         .shutter-btn:hover {
-            transform: scale(1.05);
+            transform: translateX(-50%) scale(1.05);
         }
 
         .shutter-btn.recording {
@@ -1286,7 +1280,7 @@
             z-index: 10;
             position: absolute;
             right: 20px;
-            bottom: 0;
+            bottom: 50px;
         }
 
         .gallery-btn img {
@@ -3312,25 +3306,22 @@
                 <span id="timer-display">00:00</span>
             </div>
             
-            <!-- Camera Controls - EDIT: DIPINDAH DAN DIUBAH -->
+            <!-- Mode Selector -->
+            <div class="mode-selector">
+                <button class="mode-btn active" id="photo-mode-btn" onclick="switchMode('photo')">FOTO</button>
+                <button class="mode-btn" id="video-mode-btn" onclick="switchMode('video')">VIDEO</button>
+            </div>
+            
+            <!-- Camera Controls -->
             <div class="camera-controls">
-                <!-- EDIT: Mode Selector dipindah ke atas tombol potret -->
-                <div class="mode-selector">
-                    <button class="mode-btn active" id="photo-mode-btn" onclick="switchMode('photo')">FOTO</button>
-                    <button class="mode-btn" id="video-mode-btn" onclick="switchMode('video')">VIDEO</button>
-                </div>
+                <!-- Tombol kamera di tengah -->
+                <button class="shutter-btn" id="shutter-btn" onclick="captureMedia()">
+                    <!-- Tombol akan berubah tergantung mode -->
+                </button>
                 
-                <!-- EDIT: Container untuk tombol shutter dan galeri -->
-                <div class="shutter-btn-container">
-                    <!-- Tombol kamera di tengah -->
-                    <button class="shutter-btn" id="shutter-btn" onclick="captureMedia()">
-                        <!-- Tombol akan berubah tergantung mode -->
-                    </button>
-                    
-                    <!-- Tombol galeri di kanan -->
-                    <div class="gallery-btn" onclick="openGallery()" id="gallery-btn">
-                        <span>🖼️</span>
-                    </div>
+                <!-- Tombol galeri di kanan -->
+                <div class="gallery-btn" onclick="openGallery()" id="gallery-btn">
+                    <span>🖼️</span>
                 </div>
             </div>
         </div>
@@ -4514,19 +4505,28 @@
         // BARU: Fungsi untuk memeriksa izin kamera
         async function checkCameraPermission() {
             try {
-                // Sembunyikan pesan izin terlebih dahulu
-                document.getElementById('camera-permission-message').style.display = 'none';
-                
-                // Tampilkan kamera
-                document.getElementById('camera-container').style.display = 'block';
-                
-                // Coba mulai kamera
-                startCamera();
-                
+                // Coba dapatkan status izin kamera
+                if (navigator.permissions && navigator.permissions.query) {
+                    const permission = await navigator.permissions.query({ name: 'camera' });
+                    
+                    if (permission.state === 'granted') {
+                        // Izin sudah diberikan, mulai kamera
+                        startCamera();
+                    } else if (permission.state === 'prompt') {
+                        // Tampilkan pesan izin
+                        showCameraPermissionMessage();
+                    } else if (permission.state === 'denied') {
+                        // Izin ditolak, tampilkan pesan
+                        showCameraPermissionMessage(true);
+                    }
+                } else {
+                    // Fallback untuk browser yang tidak support permissions API
+                    startCamera();
+                }
             } catch (error) {
                 console.error('Error checking camera permission:', error);
-                // Tampilkan pesan izin jika terjadi error
-                showCameraPermissionMessage(true);
+                // Fallback: coba mulai kamera
+                startCamera();
             }
         }
 
@@ -4579,7 +4579,7 @@
             showHome();
         }
 
-        // BARU: Fungsi untuk mengganti mode (foto/video) - DIUBAH
+        // BARU: Fungsi untuk mengganti mode (foto/video)
         function switchMode(mode) {
             currentMode = mode;
             
@@ -4644,32 +4644,19 @@
                 
                 // Siapkan MediaRecorder untuk mode video
                 if (currentMode === 'video') {
-                    const options = { mimeType: 'video/webm; codecs=vp9,opus' };
-                    
-                    // Cek dukungan untuk format video
-                    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                        options.mimeType = 'video/webm; codecs=vp8,opus';
-                    }
-                    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                        options.mimeType = 'video/webm';
-                    }
-                    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-                        options.mimeType = 'video/mp4';
-                    }
-                    
-                    mediaRecorder = new MediaRecorder(currentStream, options);
+                    mediaRecorder = new MediaRecorder(currentStream, {
+                        mimeType: 'video/webm; codecs=vp9'
+                    });
                     
                     mediaRecorder.ondataavailable = (event) => {
-                        if (event.data && event.data.size > 0) {
+                        if (event.data.size > 0) {
                             recordedChunks.push(event.data);
                         }
                     };
                     
                     mediaRecorder.onstop = () => {
                         // Buat blob dari chunks
-                        const blob = new Blob(recordedChunks, { 
-                            type: mediaRecorder.mimeType 
-                        });
+                        const blob = new Blob(recordedChunks, { type: 'video/webm' });
                         currentMediaURL = URL.createObjectURL(blob);
                         currentMediaType = 'video';
                         
@@ -4705,18 +4692,8 @@
             
             // Stop recording jika sedang merekam
             if (isRecording && mediaRecorder && mediaRecorder.state === 'recording') {
-                mediaRecorder.stop();
-                isRecording = false;
+                stopRecording();
             }
-            
-            // Hentikan timer recording
-            if (recordingTimer) {
-                clearInterval(recordingTimer);
-                recordingTimer = null;
-            }
-            
-            // Reset timer display
-            document.getElementById('recording-timer').style.display = 'none';
         }
 
         // BARU: Fungsi untuk mengambil foto atau merekam video
@@ -4744,12 +4721,6 @@
                 return;
             }
             
-            // Pastikan video siap
-            if (preview.videoWidth === 0 || preview.videoHeight === 0) {
-                alert('Kamera belum siap. Tunggu sebentar...');
-                return;
-            }
-            
             // Atur ukuran canvas sesuai dengan video
             canvas.width = preview.videoWidth;
             canvas.height = preview.videoHeight;
@@ -4773,66 +4744,53 @@
 
         // BARU: Fungsi untuk mulai merekam video
         function startRecording() {
-            if (!mediaRecorder) {
-                alert('MediaRecorder tidak tersedia. Pastikan browser mendukung rekaman video.');
-                return;
-            }
+            if (!mediaRecorder) return;
             
             // Reset chunks
             recordedChunks = [];
             
             // Mulai recording
-            try {
-                mediaRecorder.start();
-                isRecording = true;
-                
-                // Update tombol shutter
-                const shutterBtn = document.getElementById('shutter-btn');
-                shutterBtn.innerHTML = '<span style="font-size: 24px;">⏹️</span>';
-                shutterBtn.classList.add('recording');
-                
-                // Mulai timer
-                recordingSeconds = 0;
-                const timerElement = document.getElementById('recording-timer');
-                timerElement.style.display = 'block';
+            mediaRecorder.start();
+            isRecording = true;
+            
+            // Update tombol shutter
+            const shutterBtn = document.getElementById('shutter-btn');
+            shutterBtn.innerHTML = '<span style="font-size: 24px;">⏹️</span>';
+            shutterBtn.classList.add('recording');
+            
+            // Mulai timer
+            recordingSeconds = 0;
+            const timerElement = document.getElementById('recording-timer');
+            timerElement.style.display = 'block';
+            updateRecordingTimer();
+            
+            recordingTimer = setInterval(() => {
+                recordingSeconds++;
                 updateRecordingTimer();
                 
-                recordingTimer = setInterval(() => {
-                    recordingSeconds++;
-                    updateRecordingTimer();
-                    
-                    // Batasi recording maksimal 60 detik
-                    if (recordingSeconds >= 60) {
-                        stopRecording();
-                    }
-                }, 1000);
-            } catch (error) {
-                console.error('Error starting recording:', error);
-                alert('Gagal memulai rekaman: ' + error.message);
-            }
+                // Batasi recording maksimal 60 detik
+                if (recordingSeconds >= 60) {
+                    stopRecording();
+                }
+            }, 1000);
         }
 
         // BARU: Fungsi untuk menghentikan recording
         function stopRecording() {
             if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
             
-            try {
-                // Hentikan recording
-                mediaRecorder.stop();
-                isRecording = false;
-                
-                // Hentikan timer
-                clearInterval(recordingTimer);
-                recordingTimer = null;
-                document.getElementById('recording-timer').style.display = 'none';
-                
-                // Update tombol shutter
-                const shutterBtn = document.getElementById('shutter-btn');
-                shutterBtn.innerHTML = '<span style="font-size: 24px;">⏺️</span>';
-                shutterBtn.classList.remove('recording');
-            } catch (error) {
-                console.error('Error stopping recording:', error);
-            }
+            // Hentikan recording
+            mediaRecorder.stop();
+            isRecording = false;
+            
+            // Hentikan timer
+            clearInterval(recordingTimer);
+            document.getElementById('recording-timer').style.display = 'none';
+            
+            // Update tombol shutter
+            const shutterBtn = document.getElementById('shutter-btn');
+            shutterBtn.innerHTML = '<span style="font-size: 24px;">⏺️</span>';
+            shutterBtn.classList.remove('recording');
         }
 
         // BARU: Fungsi untuk memperbarui timer recording - DIUBAH SEPERTI TIKTOK
@@ -4884,11 +4842,6 @@
                 currentMediaType = null;
             }
             
-            // Reset recording
-            recordedChunks = [];
-            recordingSeconds = 0;
-            isRecording = false;
-            
             // Reset editing
             resetEditing();
         }
@@ -4936,8 +4889,8 @@
                 // Load gambar ke canvas
                 currentEditImage = new Image();
                 currentEditImage.onload = function() {
-                    currentEditCanvas.width = currentEditImage.naturalWidth || currentEditImage.width;
-                    currentEditCanvas.height = currentEditImage.naturalHeight || currentEditImage.height;
+                    currentEditCanvas.width = currentEditImage.width;
+                    currentEditCanvas.height = currentEditImage.height;
                     currentEditContext.drawImage(currentEditImage, 0, 0);
                 };
                 currentEditImage.src = currentMediaURL;
