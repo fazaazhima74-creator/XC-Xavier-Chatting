@@ -1138,9 +1138,10 @@ input:checked + .slider:before {
     flex-shrink: 0;
 }
 
+/* EDIT: Menghapus tulisan "Buat Konten" di tengah */
 .upload-header .page-title {
     color: white;
-    font-size: 20px;
+    font-size: 0px; /* Disembunyikan */
     flex-grow: 1;
     text-align: center;
     margin: 0;
@@ -1151,28 +1152,29 @@ input:checked + .slider:before {
     flex-shrink: 0;
 }
 
-/* Mode Selector - FOTO/VIDIO - DIPINDAH DAN DIUBAH */
+/* EDIT: Mode Selector - FOTO/VIDIO - DIPINDAH KE ATAS TOMBOL POTRET */
 .camera-controls {
     position: absolute;
     bottom: 30px;
     left: 0;
     width: 100%;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    grid-template-rows: auto auto;
-    gap: 15px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     padding: 0 20px;
     box-sizing: border-box;
     z-index: 10;
+    gap: 10px;
 }
 
+/* EDIT: Mode selector dipindah ke atas tombol potret */
 .mode-selector {
-    grid-column: 2;
-    grid-row: 1;
     display: flex;
     justify-content: center;
-    gap: 40px;
-    margin-bottom: 10px;
+    gap: 30px;
+    width: 100%;
+    margin-bottom: 20px;
 }
 
 .mode-btn {
@@ -1218,7 +1220,16 @@ input:checked + .slider:before {
     transform: scaleX(-1); /* Mirror effect */
 }
 
-/* Camera Controls - DIUBAH (tombol reload dihapus) */
+/* EDIT: Camera Controls - DIUBAH dengan tombol potret di tengah dan galeri di kanan */
+.shutter-btn-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    position: relative;
+    margin-bottom: 20px;
+}
+
 .shutter-btn {
     width: 70px;
     height: 70px;
@@ -1230,9 +1241,8 @@ input:checked + .slider:before {
     align-items: center;
     justify-content: center;
     transition: all 0.3s;
-    justify-self: center;
-    grid-column: 2;
-    grid-row: 2;
+    position: relative;
+    z-index: 5;
 }
 
 .shutter-btn:hover {
@@ -1256,10 +1266,6 @@ input:checked + .slider:before {
 }
 
 .gallery-btn {
-    grid-column: 3;
-    grid-row: 1 / span 2;
-    align-self: center;
-    justify-self: end;
     background: rgba(0, 0, 0, 0.5);
     border: 2px solid white;
     width: 50px;
@@ -1270,6 +1276,9 @@ input:checked + .slider:before {
     justify-content: center;
     cursor: pointer;
     z-index: 10;
+    position: absolute;
+    right: 20px;
+    bottom: 0;
 }
 
 .gallery-btn img {
@@ -1279,23 +1288,41 @@ input:checked + .slider:before {
     object-fit: cover;
 }
 
-/* Recording Timer */
+/* Recording Timer - DIUBAH SEPERTI TIKTOK */
 .recording-timer {
     position: absolute;
-    top: 120px;
+    top: 100px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(255, 71, 87, 0.8);
+    background: rgba(0, 0, 0, 0.7);
     color: white;
-    padding: 8px 16px;
+    padding: 10px 20px;
     border-radius: 20px;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 700;
     z-index: 10;
     display: none;
+    border: 2px solid #ff4757;
+    min-width: 80px;
+    text-align: center;
 }
 
-/* Preview After Capture */
+.timer-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background-color: #ff4757;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Preview After Capture - DIUBAH untuk tambah tombol Edit */
 .capture-preview {
     position: absolute;
     top: 0;
@@ -1306,6 +1333,31 @@ input:checked + .slider:before {
     z-index: 20;
     display: none;
     flex-direction: column;
+}
+
+/* EDIT: Tombol Edit di kanan atas */
+.edit-top-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid white;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+}
+
+.edit-top-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
 }
 
 .preview-media-container {
@@ -1475,6 +1527,350 @@ input:checked + .slider:before {
 
 .post-btn:hover {
     background: #7a68e0;
+}
+
+/* BARU: Halaman Editing seperti Snack Video */
+.edit-page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    z-index: 40;
+    display: none;
+    flex-direction: column;
+}
+
+.edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 10;
+}
+
+.edit-header .back-btn {
+    color: white;
+    font-size: 28px;
+    flex-shrink: 0;
+}
+
+.edit-header .page-title {
+    color: white;
+    font-size: 20px;
+    flex-grow: 1;
+    text-align: center;
+    margin: 0;
+}
+
+.edit-header .save-btn {
+    background: var(--accent-purple);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.edit-container {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+.edit-preview {
+    flex: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+}
+
+.edit-preview-media {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.edit-tools {
+    flex: 1;
+    background: rgba(30, 30, 30, 0.9);
+    padding: 20px;
+    overflow-y: auto;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.edit-tools-title {
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.edit-tool-category {
+    margin-bottom: 25px;
+}
+
+.edit-tool-category h4 {
+    color: white;
+    font-size: 16px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.edit-tool-category h4 .icon {
+    font-size: 20px;
+}
+
+.tool-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.tool-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.tool-button:hover {
+    background: rgba(146, 125, 252, 0.3);
+    border-color: var(--accent-purple);
+}
+
+.tool-button.active {
+    background: var(--accent-purple);
+    border-color: var(--accent-purple);
+}
+
+.slider-container {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+.slider-label {
+    display: flex;
+    justify-content: space-between;
+    color: white;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.slider-value {
+    color: var(--accent-purple);
+    font-weight: 600;
+}
+
+.edit-slider {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    outline: none;
+}
+
+.edit-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent-purple);
+    cursor: pointer;
+    border: 2px solid white;
+}
+
+.filter-preview {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 10px 0;
+}
+
+.filter-item {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.3s;
+}
+
+.filter-item.active {
+    border-color: var(--accent-purple);
+}
+
+.filter-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.filter-name {
+    text-align: center;
+    color: white;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.sticker-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.sticker-item {
+    width: 100%;
+    aspect-ratio: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 24px;
+    transition: all 0.3s;
+}
+
+.sticker-item:hover {
+    background: rgba(146, 125, 252, 0.3);
+    transform: scale(1.05);
+}
+
+.text-input-container {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+.text-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.text-style-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.text-style-button {
+    flex: 1;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 12px;
+}
+
+.text-style-button.active {
+    background: var(--accent-purple);
+    border-color: var(--accent-purple);
+}
+
+.color-palette {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.color-item {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.color-item.active {
+    border-color: white;
+    transform: scale(1.1);
+}
+
+/* Overlay untuk teks dan stiker */
+.text-overlay, .sticker-overlay {
+    position: absolute;
+    cursor: move;
+    user-select: none;
+    z-index: 10;
+}
+
+.text-overlay {
+    padding: 10px;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    max-width: 300px;
+    word-wrap: break-word;
+    text-align: center;
+}
+
+.sticker-overlay {
+    font-size: 40px;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-overlay {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 20px;
+    height: 20px;
+    background: #ff4757;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    z-index: 11;
 }
 
 /* BARU: Gaya untuk postingan di beranda */
@@ -2078,6 +2474,119 @@ input:checked + .slider:before {
     transform: translateY(-2px);
 }
 
+/* BARU: Camera Permission Message - DIUBAH */
+.camera-permission-message {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    padding: 30px;
+    text-align: center;
+}
+
+.camera-permission-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    color: var(--accent-purple);
+}
+
+.camera-permission-title {
+    font-size: 28px;
+    color: white;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.camera-permission-text {
+    font-size: 16px;
+    color: #ccc;
+    margin-bottom: 25px;
+    line-height: 1.6;
+    max-width: 500px;
+}
+
+.camera-permission-steps {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 25px;
+    text-align: left;
+    max-width: 500px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.permission-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 15px;
+    color: white;
+}
+
+.step-number {
+    background: var(--accent-purple);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.step-text {
+    flex: 1;
+    padding-top: 5px;
+}
+
+.camera-permission-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.permission-btn {
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s;
+    min-width: 160px;
+}
+
+.permission-btn.primary {
+    background: var(--accent-purple);
+    color: white;
+}
+
+.permission-btn.primary:hover {
+    background: #7a68e0;
+    transform: translateY(-3px);
+}
+
+.permission-btn.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 2px solid white;
+}
+
+.permission-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+}
+
 /* Media Query Responsif */
 @media (max-width: 900px) {
     .home-container {
@@ -2168,6 +2677,37 @@ input:checked + .slider:before {
         font-size: 18px;
         padding: 8px 15px;
     }
+
+    /* Responsif untuk halaman edit */
+    .edit-container {
+        flex-direction: column;
+    }
+    
+    .edit-tools {
+        max-height: 300px;
+        overflow-y: auto;
+        border-left: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Responsif untuk camera permission message */
+    .camera-permission-message {
+        padding: 20px;
+    }
+    
+    .camera-permission-title {
+        font-size: 24px;
+    }
+    
+    .camera-permission-text {
+        font-size: 14px;
+    }
+    
+    .permission-btn {
+        padding: 12px 24px;
+        min-width: 140px;
+        font-size: 14px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -2193,5 +2733,52 @@ input:checked + .slider:before {
     .gallery-btn {
         width: 40px;
         height: 40px;
+    }
+    
+    /* Responsif untuk tombol edit */
+    .edit-top-button {
+        top: 15px;
+        right: 15px;
+        padding: 8px 15px;
+        font-size: 14px;
+    }
+    
+    /* Responsif untuk halaman edit */
+    .tool-button {
+        min-width: 100px;
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .sticker-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .camera-permission-title {
+        font-size: 22px;
+    }
+    
+    .camera-permission-text {
+        font-size: 13px;
+    }
+    
+    .camera-permission-steps {
+        padding: 15px;
+    }
+    
+    .permission-btn {
+        padding: 10px 20px;
+        min-width: 120px;
+        font-size: 13px;
+    }
+    
+    .permission-step {
+        gap: 10px;
+    }
+    
+    .step-number {
+        width: 25px;
+        height: 25px;
+        font-size: 14px;
     }
 }
