@@ -1160,30 +1160,29 @@
             flex-shrink: 0;
         }
         
-        /* Mode Selector - FOTO/VIDIO - DIPINDAH DAN DIUBAH */
+        /* EDIT: Mode Selector - FOTO/VIDIO - DIPINDAH KE ATAS TOMBOL POTRET */
         .camera-controls {
             position: absolute;
             bottom: 30px;
             left: 0;
             width: 100%;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             padding: 0 20px;
             box-sizing: border-box;
             z-index: 10;
-            gap: 20px;
+            gap: 10px;
         }
 
+        /* EDIT: Mode selector dipindah ke atas tombol potret */
         .mode-selector {
             display: flex;
             justify-content: center;
-            gap: 40px;
-            position: absolute;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
+            gap: 30px;
             width: 100%;
+            margin-bottom: 20px;
         }
 
         .mode-btn {
@@ -1229,7 +1228,16 @@
             transform: scaleX(-1); /* Mirror effect */
         }
 
-        /* Camera Controls - DIUBAH (tombol reload dihapus) */
+        /* EDIT: Camera Controls - DIUBAH dengan tombol potret di tengah dan galeri di kanan */
+        .shutter-btn-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
         .shutter-btn {
             width: 70px;
             height: 70px;
@@ -1241,14 +1249,12 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 40px;
+            position: relative;
+            z-index: 5;
         }
 
         .shutter-btn:hover {
-            transform: translateX(-50%) scale(1.05);
+            transform: scale(1.05);
         }
 
         .shutter-btn.recording {
@@ -1280,7 +1286,7 @@
             z-index: 10;
             position: absolute;
             right: 20px;
-            bottom: 50px;
+            bottom: 0;
         }
 
         .gallery-btn img {
@@ -3306,22 +3312,25 @@
                 <span id="timer-display">00:00</span>
             </div>
             
-            <!-- Mode Selector -->
-            <div class="mode-selector">
-                <button class="mode-btn active" id="photo-mode-btn" onclick="switchMode('photo')">FOTO</button>
-                <button class="mode-btn" id="video-mode-btn" onclick="switchMode('video')">VIDEO</button>
-            </div>
-            
-            <!-- Camera Controls -->
+            <!-- Camera Controls - EDIT: DIPINDAH DAN DIUBAH -->
             <div class="camera-controls">
-                <!-- Tombol kamera di tengah -->
-                <button class="shutter-btn" id="shutter-btn" onclick="captureMedia()">
-                    <!-- Tombol akan berubah tergantung mode -->
-                </button>
+                <!-- EDIT: Mode Selector dipindah ke atas tombol potret -->
+                <div class="mode-selector">
+                    <button class="mode-btn active" id="photo-mode-btn" onclick="switchMode('photo')">FOTO</button>
+                    <button class="mode-btn" id="video-mode-btn" onclick="switchMode('video')">VIDEO</button>
+                </div>
                 
-                <!-- Tombol galeri di kanan -->
-                <div class="gallery-btn" onclick="openGallery()" id="gallery-btn">
-                    <span>🖼️</span>
+                <!-- EDIT: Container untuk tombol shutter dan galeri -->
+                <div class="shutter-btn-container">
+                    <!-- Tombol kamera di tengah -->
+                    <button class="shutter-btn" id="shutter-btn" onclick="captureMedia()">
+                        <!-- Tombol akan berubah tergantung mode -->
+                    </button>
+                    
+                    <!-- Tombol galeri di kanan -->
+                    <div class="gallery-btn" onclick="openGallery()" id="gallery-btn">
+                        <span>🖼️</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -4579,7 +4588,7 @@
             showHome();
         }
 
-        // BARU: Fungsi untuk mengganti mode (foto/video)
+        // BARU: Fungsi untuk mengganti mode (foto/video) - DIUBAH
         function switchMode(mode) {
             currentMode = mode;
             
